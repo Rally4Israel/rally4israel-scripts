@@ -1,0 +1,14 @@
+{
+  "name": "rally4israel-scripts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Code.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "ari.abramowitz1@gmail.com",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
