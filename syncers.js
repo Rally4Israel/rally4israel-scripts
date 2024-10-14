@@ -62,13 +62,13 @@ class UTCCalendarSyncer {
         let data = this.sheet.getDataRange().getValues();
         this.mapColumnIndexes(data[0]);
         // Loop through the rows starting from row 2 (index 1)
-        console.log(`Syncing ${data.length} events to UTC calendar...`)
+        console.log(`Syncing ${data.length - 1} events to UTC calendar...`)
         for (let i = 1; i < data.length; i++) {
             let row = data[i];
             if (!row[1]) break
             this.syncRow(i, row)
         }
-        // this.deleteOldEvents()
+        this.deleteOldEvents()
     }
 
     mapColumnIndexes(headerRow) {
@@ -89,8 +89,6 @@ class UTCCalendarSyncer {
 
         let event = this.calendar.getEventById(utcEventId)
 
-        console.log(`start: ${localStartTime}`)
-        console.log(`start: ${localStartTime}`)
 
         if (event) {
             console.log(`Updating UTC event: ${event.getTitle()}`)
@@ -121,26 +119,16 @@ class UTCCalendarSyncer {
     }
 
     deleteOldUTCIds() {
-        /*
-          After events get deleted, thier UTC Ids still show up in the Filtered Events sheet. Delete them before trying to
-          delete the actual events
-    
-          pseudo-code
-    
-          for row in sheet
-            if no iCalUID
-              delete row
-        */
         let data = this.sheet.getDataRange().getValues();
         let iCalUIDColumnIndex = this.columnIndexMap["iCalUID"];
-        let utcIdColumnIndex = this.columnIndexMap["UTC'd UID"];
+        let utcUIDColumnIndex = this.columnIndexMap["UTC'd UID"];
 
         // Iterate through each row (skip the header row at index 0)
         for (let i = data.length - 1; i > 0; i--) { // Loop backward to avoid index shifting issues when deleting
             let row = data[i];
 
             // If the iCalUID field is empty, delete the row
-            if (!row[iCalUIDColumnIndex] && row[utcIdColumnIndex]) {
+            if (!row[iCalUIDColumnIndex] && row[utcUIDColumnIndex]) {
                 console.log(`Clearing UTC'd UID cell in row ${i + 1}`);
                 this.sheet.getRange(i + 1, utcUIDColumnIndex + 1).clearContent(); // Adjust for 1-based index
             }
@@ -172,7 +160,6 @@ class UTCCalendarSyncer {
                 sheetEventIds.add(eventId); // Add event ID to the set
             }
         }
-
         // Loop through the calendar events and delete those not in the sheet
         for (let event of events) {
             let eventId = event.getId();
