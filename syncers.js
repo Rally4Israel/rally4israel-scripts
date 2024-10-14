@@ -102,7 +102,7 @@ class UTCCalendarSyncer {
             event.setLocation(location)
             event.setLocation(location)
         } else {
-            console.log(`Creating UTC event: ${event.getTitle()}`)
+            console.log(`Creating UTC event: ${row[this.columnIndexMap["Event Title"]]}`)
             event = this.calendar.createEvent(
                 title,
                 localStartTime,
