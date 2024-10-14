@@ -1,9 +1,3 @@
-/*
- Resources
- - http://qunitgs2.com/
- - qunit tutorial https://www.youtube.com/watch?v=9x-l-VW_bWI&list=PLIz7FUBFbjZ22LGs00HnnEnHH8zeW1CGh&index=1 
-*/
-
 function syncEvents() {
   israelChantsCalendarAPI = new CalendarAPI('israelchants@gmail.com')
   rawEventsSheetAPI = new SheetAPI('1pQszojsEaFCF5lykzW_LpVCY-3z373xBjr2deU32ZUM', 'Raw Events')
