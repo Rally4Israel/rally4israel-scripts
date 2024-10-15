@@ -1,17 +1,40 @@
 class RawEventsToUTCSyncer {
-    constructor(sourceCalendars, utcCalendar, eventIdMapSheet) {
+    constructor(sourceCalendars, utcCalendar, eventIdMapSheet, usersSheet) {
         this.sourceCalendars = sourceCalendars
         this.utcCalendar = utcCalendar
         this.eventIdMapSheet = eventIdMapSheet
+        this.usersSheet = usersSheet
+        this.usersMap = {}
         this.incomingRawEventsById = {}
         this.syncedEventsByRawId = {}
     }
 
     sync() {
-        this.buildIncomingRawEventsById()
+        this.buildUsersMap()
+        this.processIncomingEvents()
         this.buildSyncedEventsMap()
         this.createOrUpdateUTCEvents()
         this.deleteOldData()
+    }
+
+    buildUsersMap() {
+        console.log("Building users map...")
+        let userRecords = this.usersSheet.getAllData()
+        let emailColIdx = this.usersSheet.getColIdx('Email')
+        let isApprovedColIdx = this.usersSheet.getColIdx('Is Approved')
+        for (let userRecord of userRecords) {
+            if (userRecord[emailColIdx]) {
+                let email = userRecord[emailColIdx]
+                let isApproved = userRecord[isApprovedColIdx]
+                this.usersMap[email] = { isApproved: isApproved }
+            }
+        }
+        console.log("Finished building users maps")
+    }
+
+    addNewUser(email) {
+        this.usersMap[email] = { isApproved: false }
+        this.usersSheet.appendRow([email, "FALSE"])
     }
 
     buildSyncedEventsMap() {
@@ -35,11 +58,16 @@ class RawEventsToUTCSyncer {
         console.log("Finished mapping synced events:")
     }
 
-    buildIncomingRawEventsById() {
+    processIncomingEvents() {
         console.log('Building raw events list...')
         for (let calendar of this.sourceCalendars) {
             for (let event of calendar.getAllEvents()) {
-                this.incomingRawEventsById[event.getId()] = event
+                let creatorEmail = event.getCreators()[0]
+                if (!this.usersMap[creatorEmail]) {
+                    this.addNewUser(creatorEmail)
+                } else if (this.usersMap[creatorEmail].isApproved) {
+                    this.incomingRawEventsById[event.getId()] = event
+                }
             }
         }
         console.log(`Raw events count: ${Object.keys(this.incomingRawEventsById).length}`)

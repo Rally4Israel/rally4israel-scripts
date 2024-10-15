@@ -5,11 +5,13 @@ function syncEvents() {
   let rawEventsSheetAPI = new SheetAPI(eventsSheetsDoc, 'Raw Events')
   let filteredEventsSheetAPI = new SheetAPI(eventsSheetsDoc, 'Filtered Events')
   let eventIDMapSheetAPI = new SheetAPI(eventsSheetsDoc, 'Synced Event ID Map')
+  let usersSheetAPI = new SheetAPI(eventsSheetsDoc, 'Users')
 
   let sycner = new RawEventsToUTCSyncer(
     [israelChantsCalendarAPI],
     utcCalendarAPI,
     eventIDMapSheetAPI,
+    usersSheetAPI
   )
   sycner.sync()
 
