@@ -1,3 +1,173 @@
+class RawEventsToUTCSyncer {
+    constructor(sourceCalendars, utcCalendar, eventIdMapSheet) {
+        this.sourceCalendars = sourceCalendars
+        this.utcCalendar = utcCalendar
+        this.eventIdMapSheet = eventIdMapSheet
+        this.incomingRawEventsById = {}
+        this.syncedEventsByRawId = {}
+    }
+
+    sync() {
+        this.buildIncomingRawEventsById()
+        this.buildSyncedEventsMap()
+        this.createOrUpdateUTCEvents()
+        this.deleteOldData()
+    }
+
+    buildSyncedEventsMap() {
+        console.log('Mapping synced events...')
+        let rawEventIdColIdx = this.eventIdMapSheet.getColIdx('Raw Event ID')
+        let utcEventIdColIdx = this.eventIdMapSheet.getColIdx('UTC Event ID')
+        let idMappings = this.eventIdMapSheet.getAllData()
+
+        for (let index = 0; index < idMappings.length; index++) {
+            let idMapping = idMappings[index];
+            let rawEventId = idMapping[rawEventIdColIdx]
+            let utcEventId = idMapping[utcEventIdColIdx]
+            this.syncedEventsByRawId[rawEventId] = {
+                utcEventId: utcEventId,
+                rawEventId: rawEventId,
+                mapSheetRowIdx: index + 1, // add 1 for header row
+                rawEvent: this.incomingRawEventsById[rawEventId],
+                utcEvent: this.utcCalendar.getEventById(utcEventId)
+            }
+        }
+        console.log("Finished mapping synced events:")
+    }
+
+    buildIncomingRawEventsById() {
+        console.log('Building raw events list...')
+        for (let calendar of this.sourceCalendars) {
+            for (let event of calendar.getAllEvents()) {
+                this.incomingRawEventsById[event.getId()] = event
+            }
+        }
+        console.log(`Raw events count: ${Object.keys(this.incomingRawEventsById).length}`)
+    }
+
+    deleteOldData() {
+        this.deleteOldIdMappings()
+        this.deleteOldEvents()
+    }
+
+    deleteOldIdMappings() {
+        let idMappingsToDelete = []
+        for (const [key, value] of Object.entries(this.syncedEventsByRawId)) {
+            let rawId = key;
+            if (!this.incomingRawEventsById[rawId]) {
+                idMappingsToDelete.push(value)
+            }
+        }
+        console.log(`Deleting ${idMappingsToDelete.length} mappings from sheet`)
+        for (let idMapping of idMappingsToDelete) {
+            this.deleteIdMappingFromSheet(idMapping.mapSheetRowIdx)
+            delete this.syncedEventsByRawId[idMapping.rawEventId]
+        }
+    }
+
+    deleteOldEvents() {
+        let utcEvents = this.utcCalendar.getAllEvents()
+        let utcToRawIdMap = {}
+        for (const [key, value] of Object.entries(this.syncedEventsByRawId)) {
+            utcToRawIdMap[value.utcEventId] = value.rawEventId
+        }
+        let eventsToDelete = []
+        for (let utcEvent of utcEvents) {
+            if (!utcToRawIdMap[utcEvent.getId()]) {
+                eventsToDelete.push(utcEvent)
+            }
+        }
+        console.log(`Deleting ${eventsToDelete.length} events...`)
+        for (let event of eventsToDelete) {
+            event.deleteEvent()
+        }
+        console.log(`Finished deleting events`)
+    }
+
+    deleteUTCEventById(id) {
+        this.utcCalendar.deleteEventById(id)
+    }
+
+    deleteIdMappingFromSheet(mapSheetRowIdx) {
+        this.eventIdMapSheet.deleteRowByIndex(mapSheetRowIdx)
+    }
+
+    createOrUpdateUTCEvents() {
+        console.log("Create/Updating UTC events...")
+        for (const [rawId, rawEvent] of Object.entries(this.incomingRawEventsById)) {
+            if (this.syncedEventsByRawId[rawId]) {
+                this.updateUTCEventByRawId(rawId)
+            } else {
+                let utcEvent = this.createUTCEventByRawId(rawId)
+                this.addEventMapping(rawEvent, utcEvent)
+            }
+        }
+        console.log("Finished create/updating UTC events")
+    }
+
+    updateUTCEventByRawId(rawId) {
+        let rawEvent = this.incomingRawEventsById[rawId]
+        console.log(`Updating UTC event: ${rawEvent.getTitle()}`)
+        let utcEvent = this.syncedEventsByRawId[rawId].utcEvent
+
+        let title = rawEvent.getTitle();
+        let localStartTime = new Date(rawEvent.getStartTime());
+        let localEndTime = new Date(rawEvent.getEndTime());
+        let location = rawEvent.getLocation() || ''; // Get location if available
+        let description = rawEvent.getDescription() || ''; // Get description if available
+        let isAllDay = rawEvent.isAllDayEvent()
+        // let localStartTime = new Date(row[this.columnIndexMap["Start Time (Local)"]]);
+        // let localEndTime = new Date(row[this.columnIndexMap["End Time (Local)"]]);
+
+        utcEvent.setTitle(title)
+        if (isAllDay) {
+            utcEvent.setAllDayDate(localStartTime.date)
+        } else {
+            utcEvent.setTime(localStartTime, localEndTime)
+        }
+        utcEvent.setDescription(description)
+        utcEvent.setLocation(location)
+        console.log("Finished updating event")
+    }
+
+    createUTCEventByRawId(rawId) {
+        let rawEvent = this.incomingRawEventsById[rawId]
+        console.log(`Creating UTC event: ${rawEvent.getTitle()}`)
+
+        let title = rawEvent.getTitle();
+        let localStartTime = new Date(rawEvent.getStartTime());
+        let localEndTime = new Date(rawEvent.getEndTime());
+        let location = rawEvent.getLocation() || ''; // Get location if available
+        let description = rawEvent.getDescription() || ''; // Get description if available
+        let isAllDay = rawEvent.isAllDayEvent()
+
+        let utcEvent = this.utcCalendar.createEvent(
+            title,
+            localStartTime,
+            localEndTime,
+            {
+                description: description || '',
+                location: location || '',
+                allDay: isAllDay || false
+            }
+        );
+        console.log("Finished creating event")
+        return utcEvent
+    }
+
+    addEventMapping(rawEvent, utcEvent) {
+        this.eventIdMapSheet.appendRow([rawEvent.getId(), utcEvent.getId()])
+        this.syncedEventsByRawId[rawEvent.getId()] = {
+            utcEventId: utcEvent.getId(),
+            rawEventId: rawEvent.getId(),
+            mapSheetRowIdx: null, // don't need this, no reason to calculate
+            // This might not work
+            rawEvent: EventAPI.getById(rawEvent),
+            utcEvent: EventAPI.getById(utcEvent)
+        }
+    }
+}
+
 class CalendarToSheetSyncer {
     constructor(calendar, sheet, startTime, endTime) {
         this.calendar = calendar
