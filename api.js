@@ -15,6 +15,22 @@ class CalendarAPI {
         return this.calendar.getEvents(beginningOfTime, endOfTime);
     }
 
+    getAllEvents2() {
+        // https://developers.google.com/calendar/api/v3/reference/events#methods
+        const optionalArgs = {
+            showDeleted: false,
+            singleEvents: true,
+            orderBy: 'startTime'
+        };
+        try {
+            const response = Calendar.Events.list(this.calendarId, optionalArgs);
+            const events = response.items;
+            return events
+        } catch (err) {
+            console.log('Failed with error %s', err.message);
+        }
+    }
+
     deleteEventById(id) {
         return this.getEventById(id).deleteEvent();
     }
@@ -65,6 +81,22 @@ class SheetAPI {
             columnIndexMap[header[i]] = i;
         }
         return columnIndexMap
+    }
+
+    getRowIndexByColumnValue(columnName, value) {
+        let colIdx = this.getColIdx(columnName);
+        if (colIdx === undefined) {
+            throw new Error(`Column "${columnName}" not found`);
+        }
+
+        let data = this.getAllData();
+        for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+            if (data[rowIndex][colIdx] === value) {
+                return rowIndex + 1; // Return 1-indexed row number
+            }
+        }
+
+        return -1; // Return -1 if value is not found
     }
 
     getColIdx(columnName) {

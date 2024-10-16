@@ -61,12 +61,13 @@ class RawEventsToUTCSyncer {
     processIncomingEvents() {
         console.log('Building raw events list...')
         for (let calendar of this.sourceCalendars) {
-            for (let event of calendar.getAllEvents()) {
-                let creatorEmail = event.getCreators()[0]
+            for (let event of calendar.getAllEvents2()) {
+                console.log(event)
+                let creatorEmail = event.creator.email
                 if (!this.usersMap[creatorEmail]) {
                     this.addNewUser(creatorEmail)
                 } else if (this.usersMap[creatorEmail].isApproved) {
-                    this.incomingRawEventsById[event.getId()] = event
+                    this.incomingRawEventsById[event.iCalUID] = event
                 }
             }
         }
@@ -86,8 +87,11 @@ class RawEventsToUTCSyncer {
                 idMappingsToDelete.push(value)
             }
         }
+        idMappingsToDelete.sort((a, b) => b.mapSheetRowIdx - a.mapSheetRowIdx);
+
         console.log(`Deleting ${idMappingsToDelete.length} mappings from sheet`)
         for (let idMapping of idMappingsToDelete) {
+
             this.deleteIdMappingFromSheet(idMapping.mapSheetRowIdx)
             delete this.syncedEventsByRawId[idMapping.rawEventId]
         }
@@ -117,6 +121,7 @@ class RawEventsToUTCSyncer {
     }
 
     deleteIdMappingFromSheet(mapSheetRowIdx) {
+        console.log(`Deleting row idx ${mapSheetRowIdx} from sheet`)
         this.eventIdMapSheet.deleteRowByIndex(mapSheetRowIdx)
     }
 
@@ -140,6 +145,9 @@ class RawEventsToUTCSyncer {
 
         let title = rawEvent.getTitle();
         let localStartTime = new Date(rawEvent.getStartTime());
+        console.log(localStartTime)
+        console.log(rawEvent.getStartTime())
+        console.log(rawEvent.start)
         let localEndTime = new Date(rawEvent.getEndTime());
         let location = rawEvent.getLocation() || ''; // Get location if available
         let description = rawEvent.getDescription() || ''; // Get description if available
@@ -160,19 +168,21 @@ class RawEventsToUTCSyncer {
 
     createUTCEventByRawId(rawId) {
         let rawEvent = this.incomingRawEventsById[rawId]
-        console.log(`Creating UTC event: ${rawEvent.getTitle()}`)
+        console.log(`Creating UTC event: ${rawEvent.summary}`)
 
-        let title = rawEvent.getTitle();
-        let localStartTime = new Date(rawEvent.getStartTime());
-        let localEndTime = new Date(rawEvent.getEndTime());
-        let location = rawEvent.getLocation() || ''; // Get location if available
-        let description = rawEvent.getDescription() || ''; // Get description if available
-        let isAllDay = rawEvent.isAllDayEvent()
+        let title = rawEvent.summary;
+        let start = new Date(rawEvent.start.dateTime);
+        let startTimeZone = rawEvent.start.timeZone
+        let end = new Date(rawEvent.end.dateTime);
+        let endTimeZone = rawEvent.start.timeZone
+        let location = rawEvent.location || ''; // Get location if available
+        let description = rawEvent.description || ''; // Get description if available
+        let isAllDay = !!rawEvent.start.date
 
         let utcEvent = this.utcCalendar.createEvent(
             title,
-            localStartTime,
-            localEndTime,
+            start,
+            end,
             {
                 description: description || '',
                 location: location || '',
@@ -185,10 +195,11 @@ class RawEventsToUTCSyncer {
 
     addEventMapping(rawEvent, utcEvent) {
         this.eventIdMapSheet.appendRow([rawEvent.getId(), utcEvent.getId()])
+
         this.syncedEventsByRawId[rawEvent.getId()] = {
             utcEventId: utcEvent.getId(),
             rawEventId: rawEvent.getId(),
-            mapSheetRowIdx: null, // don't need this, no reason to calculate
+            mapSheetRowIdx: this.eventIdMapSheet.getRowIndexByColumnValue("UTC Event ID", utcEvent.getId()), // don't need this, no reason to calculate
             // This might not work
             rawEvent: EventAPI.getById(rawEvent),
             utcEvent: EventAPI.getById(utcEvent)
