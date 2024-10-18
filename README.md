@@ -1,7 +1,7 @@
 ### Google Files
 
-- [ ] Script: https://script.google.com/home/projects/1Nc9Zfe-gh4ftyec6LgW90TSh5exvK2eBBY-4b7Y_Wt4QXOEorzAm6Pzd/edit
-- [ ] Sheet: https://docs.google.com/spreadsheets/d/1pQszojsEaFCF5lykzW_LpVCY-3z373xBjr2deU32ZUM/edit?usp=drive_web&ouid=114238396448827772618
+-  Script: https://script.google.com/home/projects/1Nc9Zfe-gh4ftyec6LgW90TSh5exvK2eBBY-4b7Y_Wt4QXOEorzAm6Pzd/edit
+-  Sheet: https://docs.google.com/spreadsheets/d/1pQszojsEaFCF5lykzW_LpVCY-3z373xBjr2deU32ZUM/edit?usp=drive_web&ouid=114238396448827772618
 
 ### Clasp Docs
 
