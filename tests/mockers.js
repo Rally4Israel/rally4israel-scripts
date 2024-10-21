@@ -27,6 +27,19 @@ class MockSheetAPI {
         return this.getColumnIndexMap()[columnName]
     }
 
+    deleteAllRowsByColumnValue(columnName, value) {
+        let colIdx = this.getColIdx(columnName)
+        for (let index = this.sheetData.length - 1; index >= 1; index--) {
+            let isMatch = this.sheetData[index][colIdx] === value
+            if (isMatch) {
+                this.deleteRowBySheetIdx(index)
+            }
+        }
+    }
+
+    deleteRowBySheetIdx(sheetIdx) {
+        this.sheetData.splice(sheetIdx, 1)
+    }
 }
 
 module.exports = { MockSheetAPI };

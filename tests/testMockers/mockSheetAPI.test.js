@@ -31,3 +31,18 @@ test('appendRow adds row to sheetData', () => {
     expect(data[0][0]).toStrictEqual("val 1a")
     expect(data[1][0]).toStrictEqual("val 2a")
 })
+
+test('deleteAllRowsByColumnValue deletes all rows with the given value in the column', () => {
+    const sheetAPI = new MockSheetAPI(initialData = [
+        ["col a", "col b"],
+        ["1", "2"],
+        ["2", "1"],
+        ["2", "3"]
+    ])
+    sheetAPI.deleteAllRowsByColumnValue("col a", "1")
+
+    const data = sheetAPI.getAllData()
+    expect(data.length).toStrictEqual(2)
+    expect(data[0][1]).toStrictEqual("1")
+    expect(data[1][1]).toStrictEqual("3")
+})
