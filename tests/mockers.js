@@ -1,3 +1,5 @@
+const { v4: uuidv4 } = require('uuid');
+
 class MockSheetAPI {
     constructor(initialData = null) {
         this.sheetData = []
@@ -42,4 +44,42 @@ class MockSheetAPI {
     }
 }
 
-module.exports = { MockSheetAPI };
+class MockCalendarAPI {
+    constructor(initialEvents = []) {
+        this.events = this.eventsListToObject(initialEvents)
+    }
+
+    eventsListToObject(events) {
+        const eventsObject = {}
+        events.forEach(event => {
+            eventsObject[event.id] = event
+        })
+        return eventsObject
+    }
+
+    getAllEvents() {
+        return Object.values(this.events)
+    }
+
+    createEvent(event) {
+        let uuid = uuidv4();
+        let copiedEvent = structuredClone(event);
+        copiedEvent.id = uuid
+        copiedEvent.iCalUID = `${uuid}@google.com`
+        this.events[uuid] = copiedEvent
+    }
+
+    updateEvent(eventId, eventOptions) {
+        let oldEvent = this.events[eventId]
+        let copiedIncomingData = structuredClone(eventOptions);
+        copiedIncomingData.id = oldEvent.id
+        copiedIncomingData.iCalUID = `${oldEvent.iCalUID}@google.com`
+        this.events[eventId] = copiedIncomingData
+    }
+
+    deleteEvent(eventId) {
+        delete this.events[eventId]
+    }
+}
+
+module.exports = { MockSheetAPI, MockCalendarAPI };
