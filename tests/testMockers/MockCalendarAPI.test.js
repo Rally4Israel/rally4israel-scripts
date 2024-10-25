@@ -62,3 +62,20 @@ test('deleteEvent deletes an event', () => {
     expect(events.length).toStrictEqual(1)
     expect(events[0].id).toStrictEqual(2)
 })
+
+test('getEventById gets an event by id', () => {
+    const calendarAPI = new MockCalendarAPI(initialEvents = [
+        {
+            id: 1,
+            iCalUID: '1@google.com',
+            summary: 'Summary 1'
+        },
+        {
+            id: 2,
+            iCalUID: '2@google.com',
+            summary: 'Summary 2'
+        }
+    ])
+    let event = calendarAPI.getEventById(1)
+    expect(event.id).toStrictEqual(1)
+})

@@ -4,6 +4,25 @@ class RawEventsToUTCSyncer {
         this.utcCalendar = utcCalendar
         this.eventIdMapSheet = eventIdMapSheet
         this.usersSheet = usersSheet
+
+    }
+
+    sync() {
+        let rawEvents = this.sourceCalendars[0].getAllEvents()
+        rawEvents.forEach(e => {
+            let utcEvent = this.utcCalendar.createEvent(e)
+            this.eventIdMapSheet.appendRow([e.id, utcEvent.id])
+        })
+    }
+}
+
+
+class RawEventsToUTCSyncer1 {
+    constructor(sourceCalendars, utcCalendar, eventIdMapSheet, usersSheet) {
+        this.sourceCalendars = sourceCalendars
+        this.utcCalendar = utcCalendar
+        this.eventIdMapSheet = eventIdMapSheet
+        this.usersSheet = usersSheet
         this.usersMap = {}
         this.incomingRawEventsById = {}
         this.syncedEventsByRawId = {}
@@ -383,7 +402,8 @@ class UTCCalendarSyncer {
 
 if (typeof module !== 'undefined') {
     module.exports = {
-        SheetCalendarSyncer,
+        RawEventsToUTCSyncer,
+        RawEventsToUTCSyncer1,
         CalendarToSheetSyncer,
         UTCCalendarSyncer
     };
