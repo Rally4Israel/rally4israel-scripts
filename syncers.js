@@ -4,15 +4,35 @@ class RawEventsToUTCSyncer {
         this.utcCalendar = utcCalendar
         this.eventIdMapSheet = eventIdMapSheet
         this.usersSheet = usersSheet
-
+        this.usersMap = {}
     }
 
     sync() {
+        this.buildUsersMap()
         let rawEvents = this.sourceCalendars[0].getAllEvents()
         rawEvents.forEach(e => {
-            let utcEvent = this.utcCalendar.createEvent(e)
-            this.eventIdMapSheet.appendRow([e.id, utcEvent.id])
+            let creator = e.creator.email
+            if (!(creator in this.usersMap)) {
+                this.usersSheet.appendRow([creator, "FALSE"])
+                this.usersMap[creator] = { isApproved: false }
+            } else if (this.usersMap[creator].isApproved) {
+                let utcEvent = this.utcCalendar.createEvent(e)
+                this.eventIdMapSheet.appendRow([e.id, utcEvent.id])
+            }
         })
+    }
+
+    buildUsersMap() {
+        let userRecords = this.usersSheet.getAllData()
+        let emailColIdx = this.usersSheet.getColIdx('Email')
+        let isApprovedColIdx = this.usersSheet.getColIdx('Is Approved')
+        for (let userRecord of userRecords) {
+            if (userRecord[emailColIdx]) {
+                let email = userRecord[emailColIdx]
+                let isApproved = userRecord[isApprovedColIdx]
+                this.usersMap[email] = { isApproved: isApproved === "TRUE" }
+            }
+        }
     }
 }
 
