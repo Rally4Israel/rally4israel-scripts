@@ -10,16 +10,22 @@ class RawEventsToUTCSyncer {
     sync() {
         this.buildUsersMap()
         let rawEvents = this.sourceCalendars[0].getAllEvents()
-        rawEvents.forEach(e => {
-            let creator = e.creator.email
-            if (!(creator in this.usersMap)) {
-                this.usersSheet.appendRow([creator, "FALSE"])
-                this.usersMap[creator] = { isApproved: false }
-            } else if (this.usersMap[creator].isApproved) {
-                let utcEvent = this.utcCalendar.createEvent(e)
-                this.eventIdMapSheet.appendRow([e.id, utcEvent.id])
-            }
-        })
+        rawEvents.forEach(e => this.syncEvent(e))
+    }
+
+    syncEvent(rawEvent) {
+        let creator = rawEvent.creator.email
+        if (!(creator in this.usersMap)) {
+            this.addNewUser(creator)
+        } else if (this.usersMap[creator].isApproved) {
+            let utcEvent = this.utcCalendar.createEvent(rawEvent)
+            this.eventIdMapSheet.appendRow([rawEvent.id, utcEvent.id])
+        }
+    }
+
+    addNewUser(email) {
+        this.usersMap[email] = { isApproved: false }
+        this.usersSheet.appendRow([email, "FALSE"])
     }
 
     buildUsersMap() {
