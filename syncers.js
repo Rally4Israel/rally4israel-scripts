@@ -14,6 +14,29 @@ class RawEventsToUTCSyncer {
         this.processIncomingEvents()
     }
 
+    buildUsersMap() {
+        let userRecords = this.usersSheet.getAllData()
+        let emailColIdx = this.usersSheet.getColIdx('Email')
+        let isApprovedColIdx = this.usersSheet.getColIdx('Is Approved')
+        userRecords.forEach(userRecord => {
+            let email = userRecord[emailColIdx]
+            if (!email) return
+            let isApproved = userRecord[isApprovedColIdx]
+            this.usersMap[email] = { isApproved: isApproved === "TRUE" }
+        })
+    }
+
+    buildSyncedEventsMap() {
+        let rawEventIdColIdx = this.eventIdMapSheet.getColIdx('Raw Event ID')
+        let utcEventIdColIdx = this.eventIdMapSheet.getColIdx('UTC Event ID')
+        let idMappings = this.eventIdMapSheet.getAllData()
+        idMappings.forEach(idMapping => {
+            let rawEventId = idMapping[rawEventIdColIdx]
+            let utcEventId = idMapping[utcEventIdColIdx]
+            this.syncedEventsIdMap[rawEventId] = utcEventId
+        })
+    }
+
     processIncomingEvents() {
         this.sourceCalendars.forEach(calendar => {
             calendar.getAllEvents().forEach(event => {
@@ -65,29 +88,6 @@ class RawEventsToUTCSyncer {
     addNewUser(email) {
         this.usersMap[email] = { isApproved: false }
         this.usersSheet.appendRow([email, "FALSE"])
-    }
-
-    buildUsersMap() {
-        let userRecords = this.usersSheet.getAllData()
-        let emailColIdx = this.usersSheet.getColIdx('Email')
-        let isApprovedColIdx = this.usersSheet.getColIdx('Is Approved')
-        userRecords.forEach(userRecord => {
-            let email = userRecord[emailColIdx]
-            if (!email) return
-            let isApproved = userRecord[isApprovedColIdx]
-            this.usersMap[email] = { isApproved: isApproved === "TRUE" }
-        })
-    }
-
-    buildSyncedEventsMap() {
-        let rawEventIdColIdx = this.eventIdMapSheet.getColIdx('Raw Event ID')
-        let utcEventIdColIdx = this.eventIdMapSheet.getColIdx('UTC Event ID')
-        let idMappings = this.eventIdMapSheet.getAllData()
-        idMappings.forEach(idMapping => {
-            let rawEventId = idMapping[rawEventIdColIdx]
-            let utcEventId = idMapping[utcEventIdColIdx]
-            this.syncedEventsIdMap[rawEventId] = utcEventId
-        })
     }
 }
 
