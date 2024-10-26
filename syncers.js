@@ -81,11 +81,10 @@ class RawEventsToUTCSyncer {
         let emailColIdx = this.usersSheet.getColIdx('Email')
         let isApprovedColIdx = this.usersSheet.getColIdx('Is Approved')
         userRecords.forEach(userRecord => {
-            if (userRecord[emailColIdx]) {
-                let email = userRecord[emailColIdx]
-                let isApproved = userRecord[isApprovedColIdx]
-                this.usersMap[email] = { isApproved: isApproved === "TRUE" }
-            }
+            let email = userRecord[emailColIdx]
+            if (!email) return
+            let isApproved = userRecord[isApprovedColIdx]
+            this.usersMap[email] = { isApproved: isApproved === "TRUE" }
         })
     }
 
