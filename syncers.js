@@ -5,21 +5,65 @@ class RawEventsToUTCSyncer {
         this.eventIdMapSheet = eventIdMapSheet
         this.usersSheet = usersSheet
         this.usersMap = {}
+        this.incomingEventsByRawId = {}
+        this.syncedEventsByRawId = {}
     }
 
     sync() {
         this.buildUsersMap()
-        let rawEvents = this.sourceCalendars[0].getAllEvents()
-        rawEvents.forEach(e => this.syncEvent(e))
+        this.processIncomingEvents()
+        this.buildSyncedEventsMap()
+        this.createOrUpdateUTCEvents()
     }
 
-    syncEvent(rawEvent) {
-        let creator = rawEvent.creator.email
-        if (!(creator in this.usersMap)) {
-            this.addNewUser(creator)
-        } else if (this.usersMap[creator].isApproved) {
-            let utcEvent = this.utcCalendar.createEvent(rawEvent)
-            this.eventIdMapSheet.appendRow([rawEvent.id, utcEvent.id])
+    processIncomingEvents() {
+        for (let calendar of this.sourceCalendars) {
+            for (let event of calendar.getAllEvents()) {
+                let creatorEmail = event.creator.email
+                if (!this.usersMap[creatorEmail]) {
+                    this.addNewUser(creatorEmail)
+                } else if (this.usersMap[creatorEmail].isApproved) {
+                    this.incomingEventsByRawId[event.id] = event
+                }
+            }
+        }
+    }
+
+    createOrUpdateUTCEvents() {
+        for (const [rawId, rawEvent] of Object.entries(this.incomingEventsByRawId)) {
+            if (this.syncedEventsByRawId[rawId]) {
+                this.updateUTCEventByRawId(rawId)
+            } else {
+                let utcEvent = this.createUTCEventByRawId(rawId)
+                this.addEventMapping(rawEvent, utcEvent)
+            }
+        }
+    }
+
+    updateUTCEventByRawId(rawId) {
+        let rawEvent = this.incomingEventsByRawId[rawId]
+        let utcEvent = this.syncedEventsByRawId[rawId].utcEvent
+        this.utcCalendar.updateEvent(utcEvent.id, rawEvent)
+    }
+
+    createUTCEventByRawId(rawId) {
+        let rawEvent = this.incomingEventsByRawId[rawId]
+        return this.utcCalendar.createEvent(rawEvent)
+    }
+
+    addEventMapping(rawEvent, utcEvent) {
+        this.addSyncedEventToSheet(rawEvent, utcEvent)
+        this.addSyncedEventToMap(rawEvent, utcEvent)
+    }
+
+    addSyncedEventToSheet(rawEvent, utcEvent) {
+        this.eventIdMapSheet.appendRow([rawEvent.id, utcEvent.id])
+    }
+
+    addSyncedEventToMap(rawEvent, utcEvent) {
+        this.syncedEventsByRawId[rawEvent.id] = {
+            rawEvent: rawEvent,
+            utcEvent: utcEvent
         }
     }
 
@@ -39,6 +83,19 @@ class RawEventsToUTCSyncer {
                 this.usersMap[email] = { isApproved: isApproved === "TRUE" }
             }
         }
+    }
+
+    buildSyncedEventsMap() {
+        let rawEventIdColIdx = this.eventIdMapSheet.getColIdx('Raw Event ID')
+        let utcEventIdColIdx = this.eventIdMapSheet.getColIdx('UTC Event ID')
+        let idMappings = this.eventIdMapSheet.getAllData()
+        idMappings.forEach(idMapping => {
+            let rawEventId = idMapping[rawEventIdColIdx]
+            let utcEventId = idMapping[utcEventIdColIdx]
+            let rawEvent = this.incomingEventsByRawId[rawEventId]
+            let utcEvent = this.utcCalendar.getEventById(utcEventId)
+            this.addSyncedEventToMap(rawEvent, utcEvent)
+        })
     }
 }
 

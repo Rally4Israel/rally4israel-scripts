@@ -87,3 +87,44 @@ describe('Creating new event', () => {
         expect(newUserRows.length).toStrictEqual(1)
     })
 })
+
+describe('Updating old event', () => {
+    const eventTemplate = {
+        creator: { email: "approved@email.com" },
+        start: { date: '2015-05-28' },
+        end: { date: '2015-05-28' },
+    }
+    let israelChantsCalendarAPI = new MockCalendarAPI(initialEvents = [
+        { ...eventTemplate, id: "1", summary: "Updated Event" }
+    ])
+    let utcCalendarAPI = new MockCalendarAPI(initialEvents = [
+        { ...eventTemplate, id: "2", summary: "Original Event" }
+    ])
+    let eventIDMapSheetAPI = new MockSheetAPI(initialData = [
+        ["Raw Event ID", "UTC Event ID"],
+        ["1", "2"]
+    ])
+    let usersSheetAPI = new MockSheetAPI(initialData = [
+        ["Email", "Is Approved"],
+        ["approved@email.com", "TRUE"],
+    ])
+    let sycner = new RawEventsToUTCSyncer(
+        [israelChantsCalendarAPI],
+        utcCalendarAPI,
+        eventIDMapSheetAPI,
+        usersSheetAPI
+    )
+    sycner.sync()
+
+    let utcEvent = utcCalendarAPI.getAllEvents()[0]
+    expect(utcEvent.summary).toStrictEqual("Updated Event")
+
+})
+
+describe('Previously approved user with events gets un-approved', () => {
+
+})
+
+describe('Deleting events', () => {
+
+})
