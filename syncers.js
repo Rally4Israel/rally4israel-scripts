@@ -17,27 +17,27 @@ class RawEventsToUTCSyncer {
     }
 
     processIncomingEvents() {
-        for (let calendar of this.sourceCalendars) {
-            for (let event of calendar.getAllEvents()) {
+        this.sourceCalendars.forEach(calendar => {
+            calendar.getAllEvents().forEach(event => {
                 let creatorEmail = event.creator.email
                 if (!this.usersMap[creatorEmail]) {
                     this.addNewUser(creatorEmail)
                 } else if (this.usersMap[creatorEmail].isApproved) {
                     this.incomingEventsByRawId[event.id] = event
                 }
-            }
-        }
+            })
+        })
     }
 
     createOrUpdateUTCEvents() {
-        for (const [rawId, rawEvent] of Object.entries(this.incomingEventsByRawId)) {
+        Object.entries(this.incomingEventsByRawId).forEach(([rawId, rawEvent]) => {
             if (this.syncedEventsByRawId[rawId]) {
-                this.updateUTCEventByRawId(rawId)
+                this.updateUTCEventByRawId(rawId);
             } else {
-                let utcEvent = this.createUTCEventByRawId(rawId)
-                this.addEventMapping(rawEvent, utcEvent)
+                let utcEvent = this.createUTCEventByRawId(rawId);
+                this.addEventMapping(rawEvent, utcEvent);
             }
-        }
+        });
     }
 
     updateUTCEventByRawId(rawId) {
@@ -76,13 +76,13 @@ class RawEventsToUTCSyncer {
         let userRecords = this.usersSheet.getAllData()
         let emailColIdx = this.usersSheet.getColIdx('Email')
         let isApprovedColIdx = this.usersSheet.getColIdx('Is Approved')
-        for (let userRecord of userRecords) {
+        userRecords.forEach(userRecord => {
             if (userRecord[emailColIdx]) {
                 let email = userRecord[emailColIdx]
                 let isApproved = userRecord[isApprovedColIdx]
                 this.usersMap[email] = { isApproved: isApproved === "TRUE" }
             }
-        }
+        })
     }
 
     buildSyncedEventsMap() {
