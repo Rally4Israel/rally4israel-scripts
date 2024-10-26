@@ -161,6 +161,46 @@ describe('Deleting events', () => {
         expect(eventIdMappings.length).toBe(1)
         expect(eventIdMappings[0]).toStrictEqual(["1", "2"])
     })
+    test('Can delete multiple events', () => {
+
+        const eventTemplate = {
+            creator: { email: "approved@email.com" },
+            start: { date: '2015-05-28' },
+            end: { date: '2015-05-28' },
+        }
+        let israelChantsCalendarAPI = new MockCalendarAPI(initialEvents = [
+            { ...eventTemplate, id: "1", summary: "Current Event" }
+        ])
+        let utcCalendarAPI = new MockCalendarAPI(initialEvents = [
+            { ...eventTemplate, id: "2", summary: "Current Event" },
+            { ...eventTemplate, id: "4", summary: "Old Event" },
+            { ...eventTemplate, id: "6", summary: "Old Event 2" }
+        ])
+        let eventIDMapSheetAPI = new MockSheetAPI(initialData = [
+            ["Raw Event ID", "UTC Event ID"],
+            ["1", "2"],
+            ["3", "4"],
+            ["5", "6"],
+        ])
+        let usersSheetAPI = new MockSheetAPI(initialData = [
+            ["Email", "Is Approved"],
+            ["approved@email.com", "TRUE"],
+        ])
+        let sycner = new RawEventsToUTCSyncer(
+            [israelChantsCalendarAPI],
+            utcCalendarAPI,
+            eventIDMapSheetAPI,
+            usersSheetAPI
+        )
+        sycner.sync()
+
+        let utcEvents = utcCalendarAPI.getAllEvents()
+        expect(utcEvents.length).toBe(1)
+        expect(utcEvents[0].summary).toBe("Current Event")
+        let eventIdMappings = eventIDMapSheetAPI.getAllData()
+        expect(eventIdMappings.length).toBe(1)
+        expect(eventIdMappings[0]).toStrictEqual(["1", "2"])
+    })
 })
 
 describe('Previously approved user with events gets un-approved', () => {

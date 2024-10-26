@@ -42,6 +42,11 @@ class MockSheetAPI {
     deleteRowBySheetIdx(sheetIdx) {
         this.sheetData.splice(sheetIdx, 1)
     }
+
+    deleteByRowNumber(rowNumber) {
+        let rowIndex = rowNumber - 1
+        this.sheetData.splice(rowIndex, 1)
+    }
 }
 
 class MockCalendarAPI {

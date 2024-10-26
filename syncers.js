@@ -1,3 +1,8 @@
+const eventSourceType = {
+    utc: "utc",
+    raw: "raw"
+}
+
 class RawEventsToUTCSyncer {
     constructor(sourceCalendars, utcCalendar, eventIdMapSheet, usersSheet) {
         this.sourceCalendars = sourceCalendars
@@ -32,11 +37,12 @@ class RawEventsToUTCSyncer {
         let rawEventIdColIdx = this.eventIdMapSheet.getColIdx('Raw Event ID')
         let utcEventIdColIdx = this.eventIdMapSheet.getColIdx('UTC Event ID')
         let idMappings = this.eventIdMapSheet.getAllData()
-        idMappings.forEach(idMapping => {
+        for (let i = 0; i < idMappings.length; i++) {
+            const idMapping = idMappings[i];
             let rawEventId = idMapping[rawEventIdColIdx]
             let utcEventId = idMapping[utcEventIdColIdx]
-            this.syncedEventsIdMap[rawEventId] = utcEventId
-        })
+            this.addSyncedEventToMap(rawEventId, utcEventId, i + 2)
+        }
     }
 
     processIncomingEvents() {
@@ -58,7 +64,8 @@ class RawEventsToUTCSyncer {
 
     createOrUpdateUTCEvent(rawEvent) {
         let utcEvent;
-        if (this.syncedEventsIdMap[rawEvent.id]) {
+        let syncedEventData = this.getSyncedEventData(eventSourceType.raw, rawEvent.id)
+        if (syncedEventData) {
             utcEvent = this.updateUTCEvent(rawEvent);
         } else {
             utcEvent = this.createUTCEvent(rawEvent);
@@ -68,7 +75,7 @@ class RawEventsToUTCSyncer {
     }
 
     updateUTCEvent(rawEvent) {
-        let utcIdEventId = this.syncedEventsIdMap[rawEvent.id]
+        let utcIdEventId = this.getSyncedEventData(eventSourceType.raw, rawEvent.id).utcEventId
         return this.utcCalendar.updateEvent(utcIdEventId, rawEvent)
     }
 
@@ -77,16 +84,23 @@ class RawEventsToUTCSyncer {
     }
 
     addEventMapping(rawEventId, utcEventId) {
-        this.addSyncedEventToSheet(rawEventId, utcEventId)
-        this.addSyncedEventToMap(rawEventId, utcEventId)
+        let result = this.addSyncedEventToSheet(rawEventId, utcEventId)
+        this.addSyncedEventToMap(rawEventId, utcEventId, result.rowNumber)
     }
 
     addSyncedEventToSheet(rawEventId, utcEventId) {
         this.eventIdMapSheet.appendRow([rawEventId, utcEventId])
+        return { rowNumber: this.eventIdMapSheet.sheetData.length + 1 }
     }
 
-    addSyncedEventToMap(rawEventId, utcEventId) {
-        this.syncedEventsIdMap[rawEventId] = utcEventId
+    addSyncedEventToMap(rawEventId, utcEventId, rowNumber) {
+        let eventData = { rawEventId: rawEventId, utcEventId: utcEventId, rowNumber: rowNumber }
+        this.syncedEventsIdMap[`${eventSourceType.raw}-${rawEventId}`] = eventData
+        this.syncedEventsIdMap[`${eventSourceType.utc}-${utcEventId}`] = eventData
+    }
+
+    getSyncedEventData(eventSourceType, eventId) {
+        return this.syncedEventsIdMap[`${eventSourceType}-${eventId}`]
     }
 
     addNewUser(email) {
@@ -95,12 +109,17 @@ class RawEventsToUTCSyncer {
     }
 
     deleteStaleEvents() {
+        let sheetRowsToDelete = []
         this.utcCalendar.getAllEvents().forEach(event => {
             if (!this.incomingUTCEventIds[event.id]) {
                 this.utcCalendar.deleteEvent(event.id)
-                this.eventIdMapSheet.deleteAllRowsByColumnValue("UTC Event ID", event.id)
+                let syncedEventData = this.getSyncedEventData(eventSourceType.utc, event.id)
+                let rowNumber = syncedEventData.rowNumber
+                sheetRowsToDelete.push(rowNumber)
             }
         })
+        sheetRowsToDelete.sort((a, b) => b - a)
+        sheetRowsToDelete.forEach(rowNumber => this.eventIdMapSheet.deleteByRowNumber(rowNumber))
     }
 }
 
