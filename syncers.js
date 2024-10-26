@@ -6,12 +6,14 @@ class RawEventsToUTCSyncer {
         this.usersSheet = usersSheet
         this.usersMap = {}
         this.syncedEventsIdMap = {}
+        this.incomingUTCEventIds = {}
     }
 
     sync() {
         this.buildUsersMap()
         this.buildSyncedEventsMap()
         this.processIncomingEvents()
+        this.deleteStaleEvents()
     }
 
     buildUsersMap() {
@@ -55,17 +57,19 @@ class RawEventsToUTCSyncer {
     }
 
     createOrUpdateUTCEvent(rawEvent) {
+        let utcEvent;
         if (this.syncedEventsIdMap[rawEvent.id]) {
-            this.updateUTCEvent(rawEvent);
+            utcEvent = this.updateUTCEvent(rawEvent);
         } else {
-            let utcEvent = this.createUTCEvent(rawEvent);
+            utcEvent = this.createUTCEvent(rawEvent);
             this.addEventMapping(rawEvent.id, utcEvent.id);
         }
+        this.incomingUTCEventIds[utcEvent.id] = true
     }
 
     updateUTCEvent(rawEvent) {
         let utcIdEventId = this.syncedEventsIdMap[rawEvent.id]
-        this.utcCalendar.updateEvent(utcIdEventId, rawEvent)
+        return this.utcCalendar.updateEvent(utcIdEventId, rawEvent)
     }
 
     createUTCEvent(rawEvent) {
@@ -88,6 +92,15 @@ class RawEventsToUTCSyncer {
     addNewUser(email) {
         this.usersMap[email] = { isApproved: false }
         this.usersSheet.appendRow([email, "FALSE"])
+    }
+
+    deleteStaleEvents() {
+        this.utcCalendar.getAllEvents().forEach(event => {
+            if (!this.incomingUTCEventIds[event.id]) {
+                this.utcCalendar.deleteEvent(event.id)
+                this.eventIdMapSheet.deleteAllRowsByColumnValue("UTC Event ID", event.id)
+            }
+        })
     }
 }
 

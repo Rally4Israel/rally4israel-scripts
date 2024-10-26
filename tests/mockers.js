@@ -67,7 +67,7 @@ class MockCalendarAPI {
         copiedEvent.id = uuid
         copiedEvent.iCalUID = `${uuid}@google.com`
         this.events[uuid] = copiedEvent
-        return copiedEvent
+        return this.events[uuid]
     }
 
     updateEvent(eventId, eventOptions) {
@@ -76,6 +76,7 @@ class MockCalendarAPI {
         copiedIncomingData.id = oldEvent.id
         copiedIncomingData.iCalUID = `${oldEvent.iCalUID}@google.com`
         this.events[eventId] = copiedIncomingData
+        return this.events[eventId]
     }
 
     deleteEvent(eventId) {
