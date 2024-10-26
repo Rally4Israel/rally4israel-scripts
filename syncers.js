@@ -19,14 +19,18 @@ class RawEventsToUTCSyncer {
     processIncomingEvents() {
         this.sourceCalendars.forEach(calendar => {
             calendar.getAllEvents().forEach(event => {
-                let creatorEmail = event.creator.email
-                if (!this.usersMap[creatorEmail]) {
-                    this.addNewUser(creatorEmail)
-                } else if (this.usersMap[creatorEmail].isApproved) {
-                    this.incomingEventsByRawId[event.id] = event
-                }
+                this.processIncomingEvent(event)
             })
         })
+    }
+
+    processIncomingEvent(event) {
+        let creatorEmail = event.creator.email
+        if (!this.usersMap[creatorEmail]) {
+            this.addNewUser(creatorEmail)
+        } else if (this.usersMap[creatorEmail].isApproved) {
+            this.incomingEventsByRawId[event.id] = event
+        }
     }
 
     createOrUpdateUTCEvents() {
