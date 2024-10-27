@@ -1,13 +1,15 @@
 const { RawEventsToUTCSyncer } = require("../../syncers")
 const { MockCalendarAPI, MockSheetAPI } = require("../mockers")
 
+const approvedEmail = "approved@email.com"
+const unapprovedEmail = "unapproved@email.com"
 
 describe('Creating new event', () => {
     function createNewEvent(options = {}) {
         let israelChantsCalendarAPI = new MockCalendarAPI(initialEvents = options.initialRawEvents || [
             {
                 id: 1,
-                creator: { email: options.creator || 'approved@email.com' },
+                creator: { email: options.creator || approvedEmail },
                 summary: "Test Event",
                 start: { date: '2015-05-28' },
                 end: { date: '2015-05-28' },
@@ -17,8 +19,8 @@ describe('Creating new event', () => {
         let eventIDMapSheetAPI = new MockSheetAPI(initialData = [["Raw Event ID", "UTC Event ID"]])
         let usersSheetAPI = new MockSheetAPI(initialData = [
             ["Email", "Is Approved"],
-            ["approved@email.com", "TRUE"],
-            ["unapproved@email.com", "FALSE"],
+            [approvedEmail, "TRUE"],
+            [unapprovedEmail, "FALSE"],
         ])
         let sycner = new RawEventsToUTCSyncer(
             [israelChantsCalendarAPI],
@@ -53,7 +55,7 @@ describe('Creating new event', () => {
     })
 
     test('Does not sync event if user is unapproved', () => {
-        const { utcCalendarAPI, eventIDMapSheetAPI } = createNewEvent({ creator: "unapproved@email.com" })
+        const { utcCalendarAPI, eventIDMapSheetAPI } = createNewEvent({ creator: unapprovedEmail })
 
         expect(eventIDMapSheetAPI.getAllData().length).toStrictEqual(0)
         expect(utcCalendarAPI.getAllEvents().length).toStrictEqual(0)
@@ -86,12 +88,38 @@ describe('Creating new event', () => {
         let newUserRows = usersSheetAPI.getAllData().filter(row => row[userEmailColIdx] === newUserEmail)
         expect(newUserRows.length).toStrictEqual(1)
     })
+    test('Converts times to UTC', () => {
+        const rawEvent = {
+            creator: { email: approvedEmail },
+            start: {
+                timeZone: 'Pacific/Pitcairn',
+                dateTime: '2024-10-15T04:45:00+03:00'
+            },
+            iCalUID: '7ri4a4ppklpfehfh3i80av3k1g@google.com',
+            end: {
+                timeZone: 'Pacific/Pitcairn',
+                dateTime: '2024-10-15T05:45:00+03:00'
+            },
+            id: '7ri4a4ppklpfehfh3i80av3k1g',
+        }
+
+        const { utcCalendarAPI } = createNewEvent({
+            initialRawEvents: [rawEvent]
+        })
+
+
+        const utcEvent = utcCalendarAPI.getAllEvents()[0]
+        expect(utcEvent.start.timeZone).toStrictEqual("UTC")
+        expect(utcEvent.start.dateTime).toStrictEqual("2024-10-14T17:45:00.000Z")
+        expect(utcEvent.end.timeZone).toStrictEqual("UTC")
+        expect(utcEvent.end.dateTime).toStrictEqual("2024-10-14T18:45:00.000Z")
+    })
 })
 
 describe('Updating old event', () => {
     test('Updates old event', () => {
         const eventTemplate = {
-            creator: { email: "approved@email.com" },
+            creator: { email: approvedEmail },
             start: { date: '2015-05-28' },
             end: { date: '2015-05-28' },
         }
@@ -107,7 +135,7 @@ describe('Updating old event', () => {
         ])
         let usersSheetAPI = new MockSheetAPI(initialData = [
             ["Email", "Is Approved"],
-            ["approved@email.com", "TRUE"],
+            [approvedEmail, "TRUE"],
         ])
         let sycner = new RawEventsToUTCSyncer(
             [israelChantsCalendarAPI],
@@ -120,6 +148,50 @@ describe('Updating old event', () => {
         let utcEvent = utcCalendarAPI.getAllEvents()[0]
         expect(utcEvent.summary).toStrictEqual("Updated Event")
     })
+    test('Converts times to UTC', () => {
+        const rawEvent = {
+            summary: "Updated Event",
+            creator: { email: approvedEmail },
+            start: {
+                timeZone: 'Pacific/Pitcairn',
+                dateTime: '2024-10-15T04:45:00+03:00'
+            },
+            iCalUID: '1@google.com',
+            end: {
+                timeZone: 'Pacific/Pitcairn',
+                dateTime: '2024-10-15T05:45:00+03:00'
+            },
+            id: '1',
+        }
+
+        let israelChantsCalendarAPI = new MockCalendarAPI(initialEvents = [
+            rawEvent
+        ])
+        let utcCalendarAPI = new MockCalendarAPI(initialEvents = [
+            { id: "2", summary: "Original Event" }
+        ])
+        let eventIDMapSheetAPI = new MockSheetAPI(initialData = [
+            ["Raw Event ID", "UTC Event ID"],
+            ["1", "2"]
+        ])
+        let usersSheetAPI = new MockSheetAPI(initialData = [
+            ["Email", "Is Approved"],
+            [approvedEmail, "TRUE"],
+        ])
+        let sycner = new RawEventsToUTCSyncer(
+            [israelChantsCalendarAPI],
+            utcCalendarAPI,
+            eventIDMapSheetAPI,
+            usersSheetAPI
+        )
+        sycner.sync()
+
+        const utcEvent = utcCalendarAPI.getAllEvents()[0]
+        expect(utcEvent.start.timeZone).toStrictEqual("UTC")
+        expect(utcEvent.start.dateTime).toStrictEqual("2024-10-14T17:45:00.000Z")
+        expect(utcEvent.end.timeZone).toStrictEqual("UTC")
+        expect(utcEvent.end.dateTime).toStrictEqual("2024-10-14T18:45:00.000Z")
+    })
 })
 
 
@@ -127,7 +199,7 @@ describe('Deleting events', () => {
     test('UTC event gets deleted if raw event is deleted', () => {
 
         const eventTemplate = {
-            creator: { email: "approved@email.com" },
+            creator: { email: approvedEmail },
             start: { date: '2015-05-28' },
             end: { date: '2015-05-28' },
         }
@@ -145,7 +217,7 @@ describe('Deleting events', () => {
         ])
         let usersSheetAPI = new MockSheetAPI(initialData = [
             ["Email", "Is Approved"],
-            ["approved@email.com", "TRUE"],
+            [approvedEmail, "TRUE"],
         ])
         let sycner = new RawEventsToUTCSyncer(
             [israelChantsCalendarAPI],
@@ -165,7 +237,7 @@ describe('Deleting events', () => {
     test('Can delete multiple events', () => {
 
         const eventTemplate = {
-            creator: { email: "approved@email.com" },
+            creator: { email: approvedEmail },
             start: { date: '2015-05-28' },
             end: { date: '2015-05-28' },
         }
@@ -185,7 +257,7 @@ describe('Deleting events', () => {
         ])
         let usersSheetAPI = new MockSheetAPI(initialData = [
             ["Email", "Is Approved"],
-            ["approved@email.com", "TRUE"],
+            [approvedEmail, "TRUE"],
         ])
         let sycner = new RawEventsToUTCSyncer(
             [israelChantsCalendarAPI],
@@ -207,7 +279,7 @@ describe('Deleting events', () => {
 describe('Previously approved user with events gets un-approved', () => {
     test('UTC event gets deleted', () => {
         const eventTemplate = {
-            creator: { email: "unapproved@email.com" },
+            creator: { email: unapprovedEmail },
             start: { date: '2015-05-28' },
             end: { date: '2015-05-28' },
         }
@@ -223,7 +295,7 @@ describe('Previously approved user with events gets un-approved', () => {
         ])
         let usersSheetAPI = new MockSheetAPI(initialData = [
             ["Email", "Is Approved"],
-            ["approved@email.com", "TRUE"],
+            [approvedEmail, "TRUE"],
         ])
         let sycner = new RawEventsToUTCSyncer(
             [israelChantsCalendarAPI],

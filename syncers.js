@@ -75,12 +75,52 @@ class RawEventsToUTCSyncer {
     }
 
     updateUTCEvent(rawEvent) {
+        this.convertEventTimesToUTC(rawEvent)
         let utcIdEventId = this.getSyncedEventData(eventSourceType.raw, rawEvent.id).utcEventId
         return this.utcCalendar.updateEvent(utcIdEventId, rawEvent)
     }
 
     createUTCEvent(rawEvent) {
+        this.convertEventTimesToUTC(rawEvent)
         return this.utcCalendar.createEvent(rawEvent)
+    }
+
+    convertEventTimesToUTC(event) {
+        this.convertEventTimeToUTC(event, "start")
+        this.convertEventTimeToUTC(event, "end")
+    }
+
+    convertEventTimeToUTC(event, startOrEnd) {
+        if (event[startOrEnd].timeZone) {
+            event[startOrEnd] = {
+                timeZone: "UTC",
+                dateTime: this.toUTC(event[startOrEnd].dateTime, event[startOrEnd].timeZone)
+            }
+        }
+    }
+
+    toUTC(dateStr, timeZone) {
+        // Replace dateTime timezone with UTC. 9AM EST becomes 9AM UTC
+
+        // Parse dateStr to get year, month, day, hours, and minutes in the target time zone
+        let date = new Date(dateStr);
+        let options = { timeZone, hour12: false };
+
+        // Retrieve date parts in the original time zone
+        let year = date.toLocaleString('en-US', { ...options, year: 'numeric' });
+        let month = date.toLocaleString('en-US', { ...options, month: '2-digit' });
+        let day = date.toLocaleString('en-US', { ...options, day: '2-digit' });
+        let hour = date.toLocaleString('en-US', { ...options, hour: '2-digit' });
+        let minute = date.toLocaleString('en-US', { ...options, minute: '2-digit' });
+
+        // Create a new Date object in UTC using the extracted parts
+        return new Date(Date.UTC(
+            parseInt(year),
+            parseInt(month) - 1, // Months are 0-based
+            parseInt(day),
+            parseInt(hour),
+            parseInt(minute)
+        )).toISOString();
     }
 
     addEventMapping(rawEventId, utcEventId) {
