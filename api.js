@@ -8,11 +8,10 @@ class CalendarAPI {
         let pageToken;
 
         do {
-            let response = Calendar.Events.list(calendarId, {
+            let response = Calendar.Events.list(this.calendarId, {
                 pageToken: pageToken,
                 maxResults: 2500,
                 showDeleted: false,
-                orderBy: 'startTime',
             });
             if (response.items && response.items.length > 0) {
                 events = events.concat(response.items);
@@ -96,33 +95,26 @@ class SheetAPI {
         return columnIndexMap
     }
 
-    getRowIndexByColumnValue(columnName, value) {
-        let colIdx = this.getColIdx(columnName);
-        if (colIdx === undefined) {
-            throw new Error(`Column "${columnName}" not found`);
-        }
-
-        let data = this.getAllData();
-        for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
-            if (data[rowIndex][colIdx] === value) {
-                return rowIndex + 1; // Return 1-indexed row number
-            }
-        }
-
-        return -1; // Return -1 if value is not found
-    }
-
     getColIdx(columnName) {
         return this.columnIndexMap[columnName]
     }
 
     getAllData() {
-        let data = this.sheet.getDataRange().getValues();
+        return this.sheet.getDataRange().getValues();
+    }
+
+    getAllRecords() {
+        let data = this.getAllData();
         return data.slice(1)
     }
 
-    deleteRowByIndex(index) {
+    deleteRowBySheetIdx(index) {
         this.sheet.deleteRow(index + 1) // row positions are 1-indexed
+    }
+
+    deleteByRowNumber(rowNumber) {
+        let rowIndex = rowNumber - 1
+        this.deleteRowBySheetIdx(rowIndex)
     }
 
     appendRow(data) {

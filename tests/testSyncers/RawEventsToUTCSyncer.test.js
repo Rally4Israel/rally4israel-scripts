@@ -19,8 +19,8 @@ describe('Creating new event', () => {
         let eventIDMapSheetAPI = new MockSheetAPI(initialData = [["Raw Event ID", "UTC Event ID"]])
         let usersSheetAPI = new MockSheetAPI(initialData = [
             ["Email", "Is Approved"],
-            [approvedEmail, "TRUE"],
-            [unapprovedEmail, "FALSE"],
+            [approvedEmail, true],
+            [unapprovedEmail, false],
         ])
         let sycner = new RawEventsToUTCSyncer(
             [israelChantsCalendarAPI],
@@ -50,25 +50,25 @@ describe('Creating new event', () => {
 
         rawEvent = israelChantsCalendarAPI.getAllEvents()[0]
         utcEvent = utcCalendarAPI.getAllEvents()[0]
-        expect(eventIDMapSheetAPI.getAllData().length).toStrictEqual(1)
-        expect(eventIDMapSheetAPI.getAllData()[0]).toStrictEqual([rawEvent.id, utcEvent.id])
+        expect(eventIDMapSheetAPI.getAllRecords().length).toStrictEqual(1)
+        expect(eventIDMapSheetAPI.getAllRecords()[0]).toStrictEqual([rawEvent.id, utcEvent.id])
     })
 
     test('Does not sync event if user is unapproved', () => {
         const { utcCalendarAPI, eventIDMapSheetAPI } = createNewEvent({ creator: unapprovedEmail })
 
-        expect(eventIDMapSheetAPI.getAllData().length).toStrictEqual(0)
+        expect(eventIDMapSheetAPI.getAllRecords().length).toStrictEqual(0)
         expect(utcCalendarAPI.getAllEvents().length).toStrictEqual(0)
     })
 
     test('Adds new users to user map', () => {
         const { utcCalendarAPI, eventIDMapSheetAPI, usersSheetAPI } = createNewEvent({ creator: "newUser@email.com" })
 
-        expect(eventIDMapSheetAPI.getAllData().length).toStrictEqual(0)
+        expect(eventIDMapSheetAPI.getAllRecords().length).toStrictEqual(0)
         expect(utcCalendarAPI.getAllEvents().length).toStrictEqual(0)
         let userEmailColIdx = usersSheetAPI.getColIdx('Email')
         let userApprovedColIdx = usersSheetAPI.getColIdx('Is Approved')
-        let newUserRow = usersSheetAPI.getAllData().find(row => row[userEmailColIdx] === "newUser@email.com")
+        let newUserRow = usersSheetAPI.getAllRecords().find(row => row[userEmailColIdx] === "newUser@email.com")
         expect(newUserRow[userApprovedColIdx]).toStrictEqual("FALSE")
     })
 
@@ -85,7 +85,7 @@ describe('Creating new event', () => {
         })
 
         let userEmailColIdx = usersSheetAPI.getColIdx('Email')
-        let newUserRows = usersSheetAPI.getAllData().filter(row => row[userEmailColIdx] === newUserEmail)
+        let newUserRows = usersSheetAPI.getAllRecords().filter(row => row[userEmailColIdx] === newUserEmail)
         expect(newUserRows.length).toStrictEqual(1)
     })
     test('Converts times to UTC', () => {
@@ -135,7 +135,7 @@ describe('Updating old event', () => {
         ])
         let usersSheetAPI = new MockSheetAPI(initialData = [
             ["Email", "Is Approved"],
-            [approvedEmail, "TRUE"],
+            [approvedEmail, true],
         ])
         let sycner = new RawEventsToUTCSyncer(
             [israelChantsCalendarAPI],
@@ -176,7 +176,7 @@ describe('Updating old event', () => {
         ])
         let usersSheetAPI = new MockSheetAPI(initialData = [
             ["Email", "Is Approved"],
-            [approvedEmail, "TRUE"],
+            [approvedEmail, true],
         ])
         let sycner = new RawEventsToUTCSyncer(
             [israelChantsCalendarAPI],
@@ -217,7 +217,7 @@ describe('Deleting events', () => {
         ])
         let usersSheetAPI = new MockSheetAPI(initialData = [
             ["Email", "Is Approved"],
-            [approvedEmail, "TRUE"],
+            [approvedEmail, true],
         ])
         let sycner = new RawEventsToUTCSyncer(
             [israelChantsCalendarAPI],
@@ -230,7 +230,7 @@ describe('Deleting events', () => {
         let utcEvents = utcCalendarAPI.getAllEvents()
         expect(utcEvents.length).toBe(1)
         expect(utcEvents[0].summary).toBe("Current Event")
-        let eventIdMappings = eventIDMapSheetAPI.getAllData()
+        let eventIdMappings = eventIDMapSheetAPI.getAllRecords()
         expect(eventIdMappings.length).toBe(1)
         expect(eventIdMappings[0]).toStrictEqual(["1", "2"])
     })
@@ -257,7 +257,7 @@ describe('Deleting events', () => {
         ])
         let usersSheetAPI = new MockSheetAPI(initialData = [
             ["Email", "Is Approved"],
-            [approvedEmail, "TRUE"],
+            [approvedEmail, true],
         ])
         let sycner = new RawEventsToUTCSyncer(
             [israelChantsCalendarAPI],
@@ -270,7 +270,7 @@ describe('Deleting events', () => {
         let utcEvents = utcCalendarAPI.getAllEvents()
         expect(utcEvents.length).toBe(1)
         expect(utcEvents[0].summary).toBe("Current Event")
-        let eventIdMappings = eventIDMapSheetAPI.getAllData()
+        let eventIdMappings = eventIDMapSheetAPI.getAllRecords()
         expect(eventIdMappings.length).toBe(1)
         expect(eventIdMappings[0]).toStrictEqual(["1", "2"])
     })
@@ -295,7 +295,7 @@ describe('Previously approved user with events gets un-approved', () => {
         ])
         let usersSheetAPI = new MockSheetAPI(initialData = [
             ["Email", "Is Approved"],
-            [approvedEmail, "TRUE"],
+            [approvedEmail, true],
         ])
         let sycner = new RawEventsToUTCSyncer(
             [israelChantsCalendarAPI],
@@ -307,7 +307,7 @@ describe('Previously approved user with events gets un-approved', () => {
 
         let utcEvents = utcCalendarAPI.getAllEvents()
         expect(utcEvents.length).toBe(0)
-        let eventIdMappings = eventIDMapSheetAPI.getAllData()
+        let eventIdMappings = eventIDMapSheetAPI.getAllRecords()
         expect(eventIdMappings.length).toBe(0)
     })
 })

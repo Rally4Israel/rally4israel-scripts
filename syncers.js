@@ -22,21 +22,21 @@ class RawEventsToUTCSyncer {
     }
 
     buildUsersMap() {
-        let userRecords = this.usersSheet.getAllData()
+        let userRecords = this.usersSheet.getAllRecords()
         let emailColIdx = this.usersSheet.getColIdx('Email')
         let isApprovedColIdx = this.usersSheet.getColIdx('Is Approved')
         userRecords.forEach(userRecord => {
             let email = userRecord[emailColIdx]
             if (!email) return
             let isApproved = userRecord[isApprovedColIdx]
-            this.usersMap[email] = { isApproved: isApproved === "TRUE" }
+            this.usersMap[email] = { isApproved: isApproved }
         })
     }
 
     buildSyncedEventsMap() {
         let rawEventIdColIdx = this.eventIdMapSheet.getColIdx('Raw Event ID')
         let utcEventIdColIdx = this.eventIdMapSheet.getColIdx('UTC Event ID')
-        let idMappings = this.eventIdMapSheet.getAllData()
+        let idMappings = this.eventIdMapSheet.getAllRecords()
         for (let i = 0; i < idMappings.length; i++) {
             const idMapping = idMappings[i];
             let rawEventId = idMapping[rawEventIdColIdx]
@@ -130,7 +130,7 @@ class RawEventsToUTCSyncer {
 
     addSyncedEventToSheet(rawEventId, utcEventId) {
         this.eventIdMapSheet.appendRow([rawEventId, utcEventId])
-        return { rowNumber: this.eventIdMapSheet.sheetData.length + 1 }
+        return { rowNumber: this.eventIdMapSheet.getAllData().length + 1 }
     }
 
     addSyncedEventToMap(rawEventId, utcEventId, rowNumber) {
@@ -145,7 +145,7 @@ class RawEventsToUTCSyncer {
 
     addNewUser(email) {
         this.usersMap[email] = { isApproved: false }
-        this.usersSheet.appendRow([email, "FALSE"])
+        this.usersSheet.appendRow([email, false])
     }
 
     deleteStaleEvents() {
@@ -185,7 +185,7 @@ class RawEventsToUTCSyncer1 {
 
     buildUsersMap() {
         console.log("Building users map...")
-        let userRecords = this.usersSheet.getAllData()
+        let userRecords = this.usersSheet.getAllRecords()
         let emailColIdx = this.usersSheet.getColIdx('Email')
         let isApprovedColIdx = this.usersSheet.getColIdx('Is Approved')
         for (let userRecord of userRecords) {
@@ -207,7 +207,7 @@ class RawEventsToUTCSyncer1 {
         console.log('Mapping synced events...')
         let rawEventIdColIdx = this.eventIdMapSheet.getColIdx('Raw Event ID')
         let utcEventIdColIdx = this.eventIdMapSheet.getColIdx('UTC Event ID')
-        let idMappings = this.eventIdMapSheet.getAllData()
+        let idMappings = this.eventIdMapSheet.getAllRecords()
 
         for (let index = 0; index < idMappings.length; index++) {
             let idMapping = idMappings[index];

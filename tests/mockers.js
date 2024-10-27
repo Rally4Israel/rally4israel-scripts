@@ -9,7 +9,11 @@ class MockSheetAPI {
     }
 
     getAllData() {
-        return this.sheetData.slice(1)
+        return this.sheetData
+    }
+
+    getAllRecords() {
+        return this.getAllData().slice(1)
     }
 
     appendRow(rowData) {
@@ -18,7 +22,7 @@ class MockSheetAPI {
 
     getColumnIndexMap() {
         let columnIndexMap = {}
-        let header = this.sheetData[0];
+        let header = this.getAllData()[0];
         for (let i = 0; i < header.length; i++) {
             columnIndexMap[header[i]] = i;
         }
@@ -29,23 +33,13 @@ class MockSheetAPI {
         return this.getColumnIndexMap()[columnName]
     }
 
-    deleteAllRowsByColumnValue(columnName, value) {
-        let colIdx = this.getColIdx(columnName)
-        for (let index = this.sheetData.length - 1; index >= 1; index--) {
-            let isMatch = this.sheetData[index][colIdx] === value
-            if (isMatch) {
-                this.deleteRowBySheetIdx(index)
-            }
-        }
-    }
-
     deleteRowBySheetIdx(sheetIdx) {
         this.sheetData.splice(sheetIdx, 1)
     }
 
     deleteByRowNumber(rowNumber) {
         let rowIndex = rowNumber - 1
-        this.sheetData.splice(rowIndex, 1)
+        this.deleteRowBySheetIdx(rowIndex)
     }
 }
 

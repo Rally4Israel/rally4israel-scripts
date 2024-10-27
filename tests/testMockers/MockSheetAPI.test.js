@@ -2,15 +2,15 @@ const { MockSheetAPI } = require("../mockers")
 
 test('initial data is empty list', () => {
     const sheetAPI = new MockSheetAPI()
-    const data = sheetAPI.getAllData()
-    expect(data).toStrictEqual([])
+    const records = sheetAPI.getAllRecords()
+    expect(records).toStrictEqual([])
 })
 
-test('getAllData skips header row', () => {
+test('getAllRecords skips header row', () => {
     const sheetAPI = new MockSheetAPI(initialData = [["col1"], ["data1"]])
-    const data = sheetAPI.getAllData()
-    expect(data.length).toStrictEqual(1)
-    expect(data[0][0]).toStrictEqual("data1")
+    const records = sheetAPI.getAllRecords()
+    expect(records.length).toStrictEqual(1)
+    expect(records[0][0]).toStrictEqual("data1")
 })
 
 test('getCoIdx returns index for column name', () => {
@@ -24,12 +24,12 @@ test('getCoIdx returns index for column name', () => {
 test('appendRow adds row to sheetData', () => {
     const sheetAPI = new MockSheetAPI(initialData = [["col a", "col b"]])
     sheetAPI.appendRow(["val 1a", "val 1b"])
-    expect(sheetAPI.getAllData().length).toBe(1)
+    expect(sheetAPI.getAllRecords().length).toBe(1)
     sheetAPI.appendRow(["val 2a", "val 2b"])
-    expect(sheetAPI.getAllData().length).toBe(2)
-    let data = sheetAPI.getAllData()
-    expect(data[0][0]).toStrictEqual("val 1a")
-    expect(data[1][0]).toStrictEqual("val 2a")
+    expect(sheetAPI.getAllRecords().length).toBe(2)
+    let records = sheetAPI.getAllRecords()
+    expect(records[0][0]).toStrictEqual("val 1a")
+    expect(records[1][0]).toStrictEqual("val 2a")
 })
 
 test('deleteAllRowsByColumnValue deletes all rows with the given value in the column', () => {
@@ -41,8 +41,8 @@ test('deleteAllRowsByColumnValue deletes all rows with the given value in the co
     ])
     sheetAPI.deleteAllRowsByColumnValue("col a", "1")
 
-    const data = sheetAPI.getAllData()
-    expect(data.length).toStrictEqual(2)
-    expect(data[0][1]).toStrictEqual("1")
-    expect(data[1][1]).toStrictEqual("3")
+    const records = sheetAPI.getAllRecords()
+    expect(records.length).toStrictEqual(2)
+    expect(records[0][1]).toStrictEqual("1")
+    expect(records[1][1]).toStrictEqual("3")
 })
