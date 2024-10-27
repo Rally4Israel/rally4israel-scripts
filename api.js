@@ -52,16 +52,6 @@ class CalendarAPI {
     }
 }
 
-class EventAPI {
-    static getById(id) {
-        return CalendarApp.getEventById(id);
-    }
-
-    static deleteById(id) {
-        return this.getById(id).deleteEvent();
-    }
-}
-
 class SheetsDocAPI {
     constructor(docId) {
         this.docId = docId
