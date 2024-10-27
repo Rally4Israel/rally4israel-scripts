@@ -1,42 +1,55 @@
 class CalendarAPI {
     constructor(calendarId) {
         this.calendarId = calendarId;
-        this.calendar = this.getCalendar()
-        this.createEvent = this.calendar.createEvent
-    }
-
-    getCalendar() {
-        return CalendarApp.getCalendarById(this.calendarId);
     }
 
     getAllEvents() {
-        let beginningOfTime = new Date(0);
-        let endOfTime = new Date(9999, 11, 31);
-        return this.calendar.getEvents(beginningOfTime, endOfTime);
+        let events = [];
+        let pageToken;
+
+        do {
+            let response = Calendar.Events.list(calendarId, {
+                pageToken: pageToken,
+                maxResults: 2500,
+                showDeleted: false,
+                orderBy: 'startTime',
+            });
+            if (response.items && response.items.length > 0) {
+                events = events.concat(response.items);
+            }
+            pageToken = response.nextPageToken;
+        } while (pageToken);
+
+        return events;
     }
 
-    getAllEvents2() {
-        // https://developers.google.com/calendar/api/v3/reference/events#methods
-        const optionalArgs = {
-            showDeleted: false,
-            singleEvents: true,
-            orderBy: 'startTime'
-        };
+    createEvent(eventData) {
         try {
-            const response = Calendar.Events.list(this.calendarId, optionalArgs);
-            const events = response.items;
-            return events
-        } catch (err) {
-            console.log('Failed with error %s', err.message);
+            let createdEvent = Calendar.Events.insert(eventData, this.calendarId);
+            Logger.log('Event created: ' + createdEvent.htmlLink);
+            return createdEvent;
+        } catch (error) {
+            Logger.log('Error creating event: ' + error.message);
         }
     }
 
-    deleteEventById(id) {
-        return this.getEventById(id).deleteEvent();
+    updateEvent(eventId, eventOptions) {
+        try {
+            let updatedEvent = Calendar.Events.update(eventOptions, this.calendarId, eventId);
+            Logger.log('Event updated: ' + updatedEvent.htmlLink);
+            return updatedEvent;
+        } catch (error) {
+            Logger.log('Error updating event: ' + error.message);
+        }
     }
 
-    getEventById(id) {
-        return this.calendar.getEventById(id);
+    deleteEvent(eventId) {
+        try {
+            Calendar.Events.remove(this.calendarId, eventId);
+            Logger.log('Event deleted successfully.');
+        } catch (error) {
+            Logger.log('Error deleting event: ' + error.message);
+        }
     }
 }
 
