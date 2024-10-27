@@ -7,7 +7,7 @@ function syncEvents() {
   let eventIDMapSheetAPI = new SheetAPI(eventsSheetsDoc, 'Synced Event ID Map')
   let usersSheetAPI = new SheetAPI(eventsSheetsDoc, 'Users')
 
-  let sycner = new RawEventsToUTCSyncer1(
+  let sycner = new RawEventsToUTCSyncer(
     [israelChantsCalendarAPI],
     utcCalendarAPI,
     eventIDMapSheetAPI,
