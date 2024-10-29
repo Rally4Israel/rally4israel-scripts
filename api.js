@@ -12,6 +12,7 @@ class GCalAPI {
                 pageToken: pageToken,
                 maxResults: 2500,
                 showDeleted: false,
+                singleEvents: true
             });
             if (response.items && response.items.length > 0) {
                 events = events.concat(response.items);
