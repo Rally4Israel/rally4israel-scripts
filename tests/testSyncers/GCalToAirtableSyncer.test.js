@@ -36,11 +36,26 @@ describe('Creating new event', () => {
         return { airtableEventsAPI, airtableUsersAPI }
     }
     test('Syncs event to airtable', () => {
-        const { airtableEventsAPI } = createEvent([{ ...sourceEventTemplate, summary: "Test Event" }])
+        const { airtableEventsAPI } = createEvent([{
+            id: "1",
+            creator: { email: "user@email.com" },
+            summary: "Test Event",
+            description: "Some description",
+            location: "Somewhere over the rainbow",
+            start: { date: '2015-05-28' },
+            end: { date: '2015-05-28' },
+            recurringEventId: "recurring-event-id-2"
+        }])
 
         let airtableEvents = airtableEventsAPI.getAllRecords()
         expect(airtableEvents.length).toStrictEqual(1)
-        expect(airtableEvents[0].fields.Title).toStrictEqual("Test Event")
+        let fields = airtableEvents[0].fields
+        expect(fields.GCalID).toStrictEqual("1")
+        expect(fields.Title).toStrictEqual("Test Event")
+        expect(fields.Location).toStrictEqual("Somewhere over the rainbow")
+        expect(fields["All Day"]).toStrictEqual(true)
+        expect(fields.Description).toStrictEqual("Some description")
+        expect(fields["Recurring Event"]).toStrictEqual(true)
     })
 
     test('Adds new users to user table', () => {

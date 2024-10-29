@@ -37,7 +37,10 @@ class GCalToAirtableSyncer {
                 End: utcEnd,
                 Date: startDate,
                 "All Day": !!gCalEvent.start.date,
-                GCalID: gCalEvent.id
+                GCalID: gCalEvent.id,
+                Location: gCalEvent.location,
+                Description: gCalEvent.description,
+                "Recurring Event": !!gCalEvent.recurringEventId
             }
         }
     }
