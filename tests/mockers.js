@@ -87,4 +87,81 @@ class MockCalendarAPI {
     }
 }
 
-module.exports = { MockSheetAPI, MockCalendarAPI };
+class MockAirtableAPI {
+    constructor(data, upsertFieldsToMergeOn) {
+        this.data = data || []
+        this.upsertFieldsToMergeOn = upsertFieldsToMergeOn
+
+        /*
+        Example Data:
+        [{
+            id: 'recPxwDejU7lzhIU6',
+            createdTime: '2024-10-27T20:00:51.000Z',
+            fields:
+            {
+                Title: 'Event Three',
+                End: '2024-10-29T03:00:00.000Z',
+                'Event ID': '3',
+                Start: '2024-10-28T22:00:00.000Z',
+                'Event Name': 'Event Three'
+            }
+        }]
+        */
+    }
+
+    getAllRecords() {
+        return this.data
+    }
+
+    createRecords(records) {
+        records.forEach(record => this.createRecord(record))
+    }
+
+    createRecord(record) {
+        let id = uuidv4();
+        let createdTime = new Date()
+        let newRecord = { id: id, createdTime: createdTime, ...record }
+        this.data.push(newRecord)
+        return newRecord
+    }
+
+    upsertRecords(records) {
+        return records.map(record => this.upsertRecord(record))
+    }
+
+    upsertRecord(record) {
+        let oldRecords = this.data.filter(oldRecord =>
+            this.upsertFieldsToMergeOn.every(field =>
+                oldRecord.fields[field] === record.fields[field]
+            )
+        )
+
+        if (oldRecords.length > 1) {
+            throw new Error("Upsert Error: Multiple matching records found")
+        } else if (oldRecords.length === 1) {
+            let oldRecord = oldRecords[0]
+            return this.updateRecord(oldRecord, record)
+        } else {
+            return this.createRecord(record)
+        }
+    }
+
+    updateRecord(oldRecord, newRecordData) {
+        oldRecord.fields = { ...oldRecord.fields, ...newRecordData.fields }
+        return oldRecord
+    }
+
+    deleteRecords(recordIds) {
+        let recordIdObj = {}
+        recordIds.forEach(id => recordIdObj[id] = true)
+        for (let index = this.data.length - 1; index >= 0; index--) {
+            let record = this.data[index];
+            let id = record.id
+            if (id in recordIdObj) {
+                this.data.splice(index, 1)
+            }
+        }
+    }
+}
+
+module.exports = { MockSheetAPI, MockCalendarAPI, MockAirtableAPI };

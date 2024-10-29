@@ -12,3 +12,9 @@
 
 - [CalendarApp](https://developers.google.com/apps-script/reference/calendar/calendar-app)
 - [V3 Calendar API](https://developers.google.com/calendar/api/v3/reference)
+
+### Airtable
+
+- [Rally Calendar Management Base](https://airtable.com/appXAVT7nJ1hNrhIw/)
+- [Rally Calendar Management API docs](https://airtable.com/appXAVT7nJ1hNrhIw/api/docs)
+- [Airtable + Google Apps Script tutorial](https://www.youtube.com/watch?v=EKo0dd6VmzY)

@@ -3,3 +3,4 @@ appsscript.json
 .clasprc.json
 creds.json
 node_modules/
+secrets.js
