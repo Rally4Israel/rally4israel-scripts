@@ -1,48 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
 
-class MockSheetAPI {
-    constructor(initialData = null) {
-        this.sheetData = []
-        if (initialData) {
-            this.sheetData = this.sheetData.concat(initialData)
-        }
-    }
-
-    getAllData() {
-        return this.sheetData
-    }
-
-    getAllRecords() {
-        return this.getAllData().slice(1)
-    }
-
-    appendRow(rowData) {
-        this.sheetData.push(rowData)
-    }
-
-    getColumnIndexMap() {
-        let columnIndexMap = {}
-        let header = this.getAllData()[0];
-        for (let i = 0; i < header.length; i++) {
-            columnIndexMap[header[i]] = i;
-        }
-        return columnIndexMap
-    }
-
-    getColIdx(columnName) {
-        return this.getColumnIndexMap()[columnName]
-    }
-
-    deleteRowBySheetIdx(sheetIdx) {
-        this.sheetData.splice(sheetIdx, 1)
-    }
-
-    deleteByRowNumber(rowNumber) {
-        let rowIndex = rowNumber - 1
-        this.deleteRowBySheetIdx(rowIndex)
-    }
-}
-
 class MockCalendarAPI {
     constructor(initialEvents = []) {
         this.events = this.eventsListToObject(initialEvents)
@@ -164,4 +121,4 @@ class MockAirtableAPI {
     }
 }
 
-module.exports = { MockSheetAPI, MockCalendarAPI, MockAirtableAPI };
+module.exports = { MockCalendarAPI, MockAirtableAPI };
