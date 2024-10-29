@@ -39,9 +39,18 @@ class GCalToAirtableSyncer {
                 "All Day": !!gCalEvent.start.date,
                 GCalID: gCalEvent.id,
                 Location: gCalEvent.location,
-                Description: gCalEvent.description,
+                Description: this.HTMLToString(gCalEvent.description),
                 "Recurring Event": !!gCalEvent.recurringEventId
             }
+        }
+    }
+
+    HTMLToString(html) {
+        try {
+            return HtmlService.createHtmlOutput(html).getContent()
+        } catch (error) {
+            if (error instanceof ReferenceError) return html;
+            else throw error;
         }
     }
 
