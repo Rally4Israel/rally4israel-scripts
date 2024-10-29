@@ -47,7 +47,8 @@ class GCalToAirtableSyncer {
 
     HTMLToString(html) {
         try {
-            return HtmlService.createHtmlOutput(html).getContent()
+            const $ = Cheerio.load(`<div>${html}</div>`);
+            return $('div').text();
         } catch (error) {
             if (error instanceof ReferenceError) return html;
             else throw error;

@@ -18,3 +18,7 @@
 - [Rally Calendar Management Base](https://airtable.com/appXAVT7nJ1hNrhIw/)
 - [Rally Calendar Management API docs](https://airtable.com/appXAVT7nJ1hNrhIw/api/docs)
 - [Airtable + Google Apps Script tutorial](https://www.youtube.com/watch?v=EKo0dd6VmzY)
+
+### Cheerio
+
+- [Cheerio Github page](https://github.com/tani/cheeriogs)
