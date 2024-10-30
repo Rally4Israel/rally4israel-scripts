@@ -57,7 +57,7 @@ class AirtableAPI {
     constructor(url, upsertFieldsToMatchOn) {
         this.url = url;
         this.upsertFieldsToMergeOn = upsertFieldsToMatchOn;
-        this.auth = `Bearer ${secrets.AIRTABLE_API_KEY}`;
+        this.auth = `Bearer ${secrets.AIRTABLE.API_KEY}`;
     }
 
     getAllRecords() {
