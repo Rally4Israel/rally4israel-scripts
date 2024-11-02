@@ -1,3 +1,125 @@
+class TwitterAPI {
+    // Based on https://blog.devgenius.io/how-to-create-tweet-automation-with-google-apps-script-from-google-sheet-a25b2f09ab1b
+
+    /**
+     * Create the OAuth2 Twitter Service
+     * @return OAuth2 service
+     */
+    getService() {
+        const CLIENT_ID = secrets.TWITTER.OAuth2.ClientID
+        const CLIENT_SECRET = secrets.TWITTER.OAuth2.ClientSecret
+        var userProps = PropertiesService.getUserProperties();
+        this.pkceChallengeVerifier();
+        return OAuth2.createService('twitter')
+            .setAuthorizationBaseUrl('https://twitter.com/i/oauth2/authorize')
+            .setTokenUrl('https://api.twitter.com/2/oauth2/token?code_verifier=' + userProps.getProperty("code_verifier"))
+            // Set the client ID and secret.
+            .setClientId(CLIENT_ID)
+            .setClientSecret(CLIENT_SECRET)
+            .setCallbackFunction('twitterAuthCallback')
+            // Set the property store where authorized tokens should be persisted.
+            .setPropertyStore(userProps)
+            // Set the scopes to request (space-separated for Twitter services).
+            .setScope('users.read tweet.read offline.access tweet.write')
+
+            // Add parameters in the authorization url
+            .setParam('response_type', 'code')
+            .setParam('code_challenge_method', 'S256')
+            .setParam('code_challenge', userProps.getProperty("code_challenge"))
+            .setTokenHeaders({
+                'Authorization': 'Basic ' + Utilities.base64Encode(CLIENT_ID + ':' + CLIENT_SECRET),
+                'Content-Type': 'application/x-www-form-urlencoded'
+            })
+    }
+
+    /**
+     * Reset the OAuth2 Twitter Service
+     */
+    reset() {
+        this.getService().reset();
+        PropertiesService.getUserProperties().deleteProperty("code_challenge");
+        PropertiesService.getUserProperties().deleteProperty("code_verifier");
+    }
+
+    /**
+     * Generate PKCE Challenge Verifier for Permission for OAuth2 Twitter Service
+     */
+    pkceChallengeVerifier() {
+        var userProps = PropertiesService.getUserProperties();
+        if (!userProps.getProperty('code_verifier')) {
+            var verifier = "";
+            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+            for (var i = 0; i < 128; i++) {
+                verifier += possible.charAt(Math.floor(Math.random() * possible.length));
+            }
+            var sha256hash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, verifier);
+            var challenge = Utilities.base64Encode(sha256hash)
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '')
+            userProps.setProperty("code_verifier", verifier)
+            userProps.setProperty("code_challenge", challenge)
+        }
+    }
+
+    sendTweetThread(messages) {
+        let tweetIds = []
+        messages.forEach(message => {
+            let lastTweetId = tweetIds.slice(-1)[0]
+            tweetIds.push(this.sendSingleTweet(message, lastTweetId))
+        });
+        return tweetIds
+    }
+
+    /**
+     * Send the Tweet
+     * @Param tweet Text to tweet
+     * @Param replyTo id of the tweet to reply
+     * @return the ID of the current Tweet
+     */
+    sendSingleTweet(tweet, replyTo) {
+        tweet = tweet || "Testing Something..."
+        var payload = {
+            text: tweet
+        }
+        if (replyTo) {
+            payload['reply'] = {
+                in_reply_to_tweet_id: replyTo
+            }
+        }
+        var service = this.getService();
+        if (service.hasAccess()) {
+            // https://developer.twitter.com/en/docs/twitter-api/users/lookup/api-reference/get-users-by-username-username
+            var url = `https://api.twitter.com/2/tweets`;
+            var response = UrlFetchApp.fetch(url, {
+                method: 'POST',
+                'contentType': 'application/json',
+                headers: {
+                    Authorization: 'Bearer ' + service.getAccessToken()
+                },
+                muteHttpExceptions: true,
+                payload: JSON.stringify(payload)
+            });
+            var result = JSON.parse(response.getContentText());
+            return result.data.id;
+        } else {
+            var authorizationUrl = service.getAuthorizationUrl();
+            Logger.log('Open the following URL and re-run the script: %s',
+                authorizationUrl);
+        }
+    }
+}
+
+function twitterAuthCallback(request) {
+    var service = new TwitterAPI().getService();
+    var authorized = service.handleCallback(request);
+    if (authorized) {
+        return HtmlService.createHtmlOutput('Success!');
+    } else {
+        return HtmlService.createHtmlOutput('Denied');
+    }
+}
+
 class GCalAPI {
     constructor(calendarId) {
         this.calendarId = calendarId;

@@ -1,5 +1,30 @@
 const { v4: uuidv4 } = require('uuid');
 
+
+class MockTwitterAPI {
+    constructor() {
+        this.tweets = []
+    }
+    sendSingleTweet(message, replyTo) {
+        const id = uuidv4()
+        const tweet = {
+            message: message,
+            replyTo: replyTo,
+            id: uuidv4()
+        }
+        this.tweets.push(tweet)
+        return id
+    }
+    sendTweetThread(messages) {
+        let tweetIds = []
+        messages.forEach(message => {
+            let lastTweetId = tweetIds.slice(-1)[0]
+            tweetIds.push(this.sendSingleTweet(message, lastTweetId))
+        });
+        return tweetIds
+    }
+}
+
 class MockCalendarAPI {
     constructor(initialEvents = []) {
         this.events = this.eventsListToObject(initialEvents)
@@ -121,4 +146,4 @@ class MockAirtableAPI {
     }
 }
 
-module.exports = { MockCalendarAPI, MockAirtableAPI };
+module.exports = { MockCalendarAPI, MockAirtableAPI, MockTwitterAPI };

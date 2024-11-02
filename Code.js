@@ -10,3 +10,12 @@ function syncEvents() {
   )
   sycner.sync()
 }
+
+function tweet() {
+  let airtableAPI = new AirtableAPI(secrets.AIRTABLE.URLS.CALENDAR, ["GCalID"])
+  let twitterAPI = new TwitterAPI()
+  let twitterPoster = new TwitterPoster(
+    airtableAPI, twitterAPI
+  )
+  twitterPoster.post()
+}
