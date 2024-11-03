@@ -22,7 +22,21 @@ class TwitterPoster {
             .filter(this.isFutureEvent)
             .sort(this.sortByStartDate)
         records = this.filterOutRecurringEvents(records)
-        return records
+        let eventsBeforeCutoff = this.getEventsBeforeCutoff(records, 10)
+        if (eventsBeforeCutoff.length >= 5) {
+            return eventsBeforeCutoff
+        } else {
+            return records.slice(0, 6)
+        }
+    }
+
+    getEventsBeforeCutoff(records, days) {
+        const endDate = new Date();
+        endDate.setDate(this.startTime.getDate() + days);
+        return records.filter(record => {
+            let eventDate = new Date(record.fields.Start)
+            return eventDate <= endDate;
+        })
     }
 
     isFutureEvent(record) {

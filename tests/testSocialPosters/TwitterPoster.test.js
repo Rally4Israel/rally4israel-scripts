@@ -235,4 +235,48 @@ describe('Event filtering', () => {
         const lastTweet = getLatestTweet(twitterAPI).message
         expect(lastTweet.includes("Upcoming Event")).toBe(true)
     })
+    test('Includes events for next 10 days', () => {
+        let days = [2, 3, 4, 5, 6, 11, 12]
+        let events = days.map(day => {
+            paddedDay = String(day).padStart(2, "0")
+            return {
+                fields: {
+                    Title: `Day ${day} Event`,
+                    Start: `2021-01-${paddedDay}T00:00:00Z`
+                }
+            }
+        })
+        let airtableEventsAPI = getAirtableEventsAPI(events)
+        let twitterAPI = new MockTwitterAPI()
+        let poster = new TwitterPoster(
+            airtableEventsAPI, twitterAPI
+        )
+        poster.post()
+
+        expect(twitterAPI.tweets.length).toBe(7) // Intro + 6 events
+        const lastTweet = getLatestTweet(twitterAPI).message
+        expect(lastTweet.includes("Day 12")).toBe(false)
+    })
+    test('Includes next 5 events if fewer than 5 in next 10 days', () => {
+        let days = [2, 3, 4, 11, 12]
+        let events = days.map(day => {
+            paddedDay = String(day).padStart(2, "0")
+            return {
+                fields: {
+                    Title: `Day ${day} Event`,
+                    Start: `2021-01-${paddedDay}T00:00:00Z`
+                }
+            }
+        })
+        let airtableEventsAPI = getAirtableEventsAPI(events)
+        let twitterAPI = new MockTwitterAPI()
+        let poster = new TwitterPoster(
+            airtableEventsAPI, twitterAPI
+        )
+        poster.post()
+
+        expect(twitterAPI.tweets.length).toBe(6) // Intro + 5 events
+        const lastTweet = getLatestTweet(twitterAPI).message
+        expect(lastTweet.includes("12")).toBe(true)
+    })
 })
