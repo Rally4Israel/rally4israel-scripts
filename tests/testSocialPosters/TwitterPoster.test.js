@@ -20,7 +20,7 @@ afterEach(() => {
 
 test('Starts thread with intro tweet', () => {
     let airtableEventsAPI = getAirtableEventsAPI([{
-        fields: { Title: "Some Event" }
+        fields: { Title: "Some Event", Start: "2024-10-14T17:45:00.000Z" }
     }])
     let twitterAPI = new MockTwitterAPI()
     let poster = new TwitterPoster(
@@ -34,7 +34,7 @@ test('Starts thread with intro tweet', () => {
 test('Post includes event title', () => {
     const title = "Some Event"
     let airtableEventsAPI = getAirtableEventsAPI([{
-        fields: { Title: title }
+        fields: { Title: title, Start: "2024-10-14T17:45:00.000Z" }
     }])
     let twitterAPI = new MockTwitterAPI()
     let poster = new TwitterPoster(
