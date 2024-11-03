@@ -24,14 +24,14 @@ class TwitterPoster {
     }
 
     getIntroTweet() {
-        let message = "Upcoming events thread"
+        let message = "Upcoming events"
         if (this.postType === PostType.TenDays) {
             message += " (next 10 days)"
         }
         let lines = [
             `🧵 ${message} ⤵️`,
-            "Have an event to add? Reach out!",
-            "Check out our calendar for more details: rally4israel.com/calendar"
+            "📢 Have an event to add? Reach out!",
+            "📅 Check the calendar for full details: rally4israel.com/calendar",
         ]
 
         return lines.join('\n')
