@@ -38,7 +38,7 @@ class GCalToAirtableSyncer {
                 Date: startDate,
                 "All Day": !!gCalEvent.start.date,
                 GCalID: gCalEvent.id,
-                Location: gCalEvent.location,
+                Location: gCalEvent.location || "",
                 Description: this.HTMLToString(gCalEvent.description),
                 "Recurring Event": !!gCalEvent.recurringEventId,
                 "Recurring Event ID": gCalEvent.recurringEventId || ""
