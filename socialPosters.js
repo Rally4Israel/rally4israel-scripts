@@ -2,6 +2,10 @@ class TwitterPoster {
     constructor(airtableAPI, twitterAPI) {
         this.airtableAPI = airtableAPI
         this.twitterAPI = twitterAPI
+
+        // Bind methods to retain `this` context
+        this.isFutureEvent = this.isFutureEvent.bind(this)
+        this.sortByStartDate = this.sortByStartDate.bind(this)
     }
 
     post() {
@@ -21,12 +25,12 @@ class TwitterPoster {
         return records
     }
 
-    isFutureEvent = (record) => {
+    isFutureEvent(record) {
         let start = new Date(record.fields.Start)
         return start > this.startTime
     }
 
-    sortByStartDate = (a, b) => {
+    sortByStartDate(a, b) {
         return new Date(a.fields.Start) - new Date(b.fields.Start)
     }
 
