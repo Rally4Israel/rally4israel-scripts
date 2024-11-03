@@ -56,6 +56,7 @@ describe('Creating new event', () => {
         expect(fields["All Day"]).toStrictEqual(true)
         expect(fields.Description).toStrictEqual("Some description")
         expect(fields["Recurring Event"]).toStrictEqual(true)
+        expect(fields["Recurring Event ID"]).toStrictEqual('recurring-event-id-2')
     })
 
     test('Adds new users to user table', () => {

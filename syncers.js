@@ -40,7 +40,8 @@ class GCalToAirtableSyncer {
                 GCalID: gCalEvent.id,
                 Location: gCalEvent.location,
                 Description: this.HTMLToString(gCalEvent.description),
-                "Recurring Event": !!gCalEvent.recurringEventId
+                "Recurring Event": !!gCalEvent.recurringEventId,
+                "Recurring Event ID": gCalEvent.recurringEventId || ""
             }
         }
     }
