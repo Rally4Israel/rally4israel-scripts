@@ -201,4 +201,38 @@ describe('Event filtering', () => {
 
         expect(twitterAPI.tweets.length).toBe(0)
     })
+
+    test('Only posts earliest upcoming instance of recurring event', () => {
+        let recurringEventId = "some-id"
+        let airtableEventsAPI = getAirtableEventsAPI([{
+            fields: {
+                Title: "Past Event",
+                Start: "2020-10-14T17:45:00.000Z",
+                "Recurring Event ID": recurringEventId
+            }
+        },
+        {
+            fields: {
+                Title: "Upcoming Event",
+                Start: "2021-10-14T17:45:00.000Z",
+                "Recurring Event ID": recurringEventId
+            }
+        },
+        {
+            fields: {
+                Title: "Later Event",
+                Start: "2022-10-14T17:45:00.000Z",
+                "Recurring Event ID": recurringEventId
+            }
+        }
+        ])
+        let twitterAPI = new MockTwitterAPI()
+        let poster = new TwitterPoster(
+            airtableEventsAPI, twitterAPI
+        )
+        poster.post()
+        expect(twitterAPI.tweets.length).toBe(2) // Intro + Event
+        const lastTweet = getLatestTweet(twitterAPI).message
+        expect(lastTweet.includes("Upcoming Event")).toBe(true)
+    })
 })

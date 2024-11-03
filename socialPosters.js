@@ -5,6 +5,7 @@ class TwitterPoster {
     }
 
     post() {
+        this.startTime = new Date()
         const airtableRecords = this.getAirtableRecords()
         if (airtableRecords.length < 1) return
         const intro = "Upcoming Events..."
@@ -13,16 +14,41 @@ class TwitterPoster {
     }
 
     getAirtableRecords() {
-        let now = Date.now()
-        const allRecords = this.airtableAPI.getAllRecords()
-        const futureRecords = allRecords.filter(record => {
-            let start = new Date(record.fields.Start)
-            return start > now
-        })
-        const sortedRecords = futureRecords.sort((a, b) => {
+        let records = this.airtableAPI.getAllRecords()
+            .filter(this.isFutureEvent)
+            .sort(this.sortByStartDate)
+        records = this.filterOutRecurringEvents(records)
+        return records
+    }
+
+    isFutureEvent = (record) => {
+        let start = new Date(record.fields.Start)
+        return start > this.startTime
+    }
+
+    sortByStartDate = (a, b) => {
+        return new Date(a.fields.Start) - new Date(b.fields.Start)
+    }
+
+    sortEventsByDate(records) {
+        records.sort((a, b) => {
             return new Date(a.fields.Start) - new Date(b.fields.Start)
         })
-        return sortedRecords
+    }
+
+    filterOutRecurringEvents(records) {
+        const recurringEventIds = {}
+        return records.filter(record => {
+            let recurringEventId = record.fields["Recurring Event ID"]
+            if (!recurringEventId) {
+                return true
+            }
+            if (recurringEventId in recurringEventIds) {
+                return false
+            }
+            recurringEventIds[recurringEventId] = true
+            return true
+        })
     }
 
     airtableRecordToTweet(record) {
