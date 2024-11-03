@@ -1,16 +1,24 @@
-const { v4: uuidv4 } = require('uuid');
-
+function getUUID() {
+    try {
+        const { v4: uuidv4 } = require('uuid');
+        return uuidv4()
+    } catch (e) {
+        if (e instanceof ReferenceError) {
+            return Utilities.getUuid()
+        }
+    }
+}
 
 class MockTwitterAPI {
     constructor() {
         this.tweets = []
     }
     sendSingleTweet(message, replyTo) {
-        const id = uuidv4()
+        const id = getUUID()
         const tweet = {
             message: message,
             replyTo: replyTo,
-            id: uuidv4()
+            id: id
         }
         this.tweets.push(tweet)
         return id
@@ -43,7 +51,7 @@ class MockCalendarAPI {
     }
 
     createEvent(event) {
-        let uuid = uuidv4();
+        let uuid = getUUID();
         let copiedEvent = structuredClone(event);
         copiedEvent.id = uuid
         copiedEvent.iCalUID = `${uuid}@google.com`
@@ -100,7 +108,7 @@ class MockAirtableAPI {
     }
 
     createRecord(record) {
-        let id = uuidv4();
+        let id = getUUID();
         let createdTime = new Date()
         let newRecord = { id: id, createdTime: createdTime, ...record }
         this.data.push(newRecord)
@@ -146,4 +154,6 @@ class MockAirtableAPI {
     }
 }
 
-module.exports = { MockCalendarAPI, MockAirtableAPI, MockTwitterAPI };
+if (typeof module !== 'undefined') {
+    module.exports = { MockCalendarAPI, MockAirtableAPI, MockTwitterAPI };
+}

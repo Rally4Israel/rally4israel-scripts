@@ -1,7 +1,13 @@
+PostType = {
+    TenDays: "Ten Days",
+    FiveEvents: "Five Events"
+}
+
 class TwitterPoster {
     constructor(airtableAPI, twitterAPI) {
         this.airtableAPI = airtableAPI
         this.twitterAPI = twitterAPI
+        this.postType = PostType.TenDays
 
         // Bind methods to retain `this` context
         this.isFutureEvent = this.isFutureEvent.bind(this)
@@ -12,9 +18,23 @@ class TwitterPoster {
         this.startTime = new Date()
         const airtableRecords = this.getAirtableRecords()
         if (airtableRecords.length < 1) return
-        const intro = "Upcoming Events..."
-        const messages = airtableRecords.map(record => this.airtableRecordToTweet(record))
-        this.twitterAPI.sendTweetThread([intro, ...messages])
+        const eventTweets = airtableRecords.map(record => this.airtableRecordToTweet(record))
+        const intro = this.getIntroTweet()
+        this.twitterAPI.sendTweetThread([intro, ...eventTweets])
+    }
+
+    getIntroTweet() {
+        let message = "Upcoming events thread"
+        if (this.postType === PostType.TenDays) {
+            message += " (next 10 days)"
+        }
+        let lines = [
+            `🧵 ${message} ⤵️`,
+            "Have an event to add? Reach out!",
+            "Check out our calendar for more details: rally4israel.com/calendar"
+        ]
+
+        return lines.join('\n')
     }
 
     getAirtableRecords() {
@@ -26,6 +46,7 @@ class TwitterPoster {
         if (eventsBeforeCutoff.length >= 5) {
             return eventsBeforeCutoff
         } else {
+            this.postType = PostType.FiveEvents
             return records.slice(0, 6)
         }
     }

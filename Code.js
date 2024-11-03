@@ -19,3 +19,15 @@ function tweet() {
   )
   twitterPoster.post()
 }
+
+function mockTweet() {
+  let airtableAPI = new AirtableAPI(secrets.AIRTABLE.URLS.CALENDAR, ["GCalID"])
+  let twitterAPI = new MockTwitterAPI()
+  let twitterPoster = new TwitterPoster(
+    airtableAPI, twitterAPI
+  )
+  twitterPoster.post()
+  twitterAPI.tweets.forEach(tweet => {
+    console.log(tweet.message)
+  })
+}
