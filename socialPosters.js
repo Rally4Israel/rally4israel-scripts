@@ -5,10 +5,24 @@ class TwitterPoster {
     }
 
     post() {
-        const airtableRecords = this.airtableAPI.getAllRecords()
+        const airtableRecords = this.getAirtableRecords()
+        if (airtableRecords.length < 1) return
         const intro = "Upcoming Events..."
         const messages = airtableRecords.map(record => this.airtableRecordToTweet(record))
         this.twitterAPI.sendTweetThread([intro, ...messages])
+    }
+
+    getAirtableRecords() {
+        let now = Date.now()
+        const allRecords = this.airtableAPI.getAllRecords()
+        const futureRecords = allRecords.filter(record => {
+            let start = new Date(record.fields.Start)
+            return start > now
+        })
+        const sortedRecords = futureRecords.sort((a, b) => {
+            return new Date(a.fields.Start) - new Date(b.fields.Start)
+        })
+        return sortedRecords
     }
 
     airtableRecordToTweet(record) {

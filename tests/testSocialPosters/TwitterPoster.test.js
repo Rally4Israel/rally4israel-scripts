@@ -9,6 +9,15 @@ function getLatestTweet(twitterAPI) {
     return twitterAPI.tweets.slice(-1)[0]
 }
 
+beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2021-01-01T00:00:00Z').getTime());
+});
+
+afterEach(() => {
+    jest.useRealTimers()
+});
+
 test('Starts thread with intro tweet', () => {
     let airtableEventsAPI = getAirtableEventsAPI([{
         fields: { Title: "Some Event" }
@@ -119,4 +128,77 @@ test('Skips location if there is none', () => {
     poster.post()
     const lastTweet = getLatestTweet(twitterAPI).message
     expect(lastTweet.includes(`📌`)).toBe(false)
+})
+
+describe('Event filtering', () => {
+    test('Only posts future events', () => {
+        let airtableEventsAPI = getAirtableEventsAPI([{
+            fields: {
+                Title: "Past Event",
+                Start: "2020-10-14T17:45:00.000Z"
+            }
+        },
+        {
+            fields: {
+                Title: "Future Event",
+                Start: "2022-10-14T17:45:00.000Z"
+            }
+        }])
+        let twitterAPI = new MockTwitterAPI()
+        let poster = new TwitterPoster(
+            airtableEventsAPI, twitterAPI
+        )
+        poster.post()
+
+        expect(twitterAPI.tweets.length).toBe(2) // Intro + Future Event
+        const lastTweet = getLatestTweet(twitterAPI).message
+        expect(lastTweet.includes("Future Event")).toBe(true)
+    })
+    test('Sorts events by start time', () => {
+        let airtableEventsAPI = getAirtableEventsAPI([{
+            fields: {
+                Title: "Event 3",
+                Start: "2022-03-14T17:45:00.000Z"
+            }
+        },
+        {
+            fields: {
+                Title: "Event 1",
+                Start: "2022-01-14T17:45:00.000Z"
+            }
+        },
+        {
+            fields: {
+                Title: "Event 2",
+                Start: "2022-02-14T17:45:00.000Z"
+            }
+        }])
+        let twitterAPI = new MockTwitterAPI()
+        let poster = new TwitterPoster(
+            airtableEventsAPI, twitterAPI
+        )
+        poster.post()
+
+        let tweets = twitterAPI.tweets
+        expect(tweets[1].message.includes("Event 1")).toBe(true)
+        expect(tweets[2].message.includes("Event 2")).toBe(true)
+        expect(tweets[3].message.includes("Event 3")).toBe(true)
+
+    })
+
+    test('Does not post if no future events', () => {
+        let airtableEventsAPI = getAirtableEventsAPI([{
+            fields: {
+                Title: "Past Event",
+                Start: "2020-10-14T17:45:00.000Z"
+            }
+        }])
+        let twitterAPI = new MockTwitterAPI()
+        let poster = new TwitterPoster(
+            airtableEventsAPI, twitterAPI
+        )
+        poster.post()
+
+        expect(twitterAPI.tweets.length).toBe(0)
+    })
 })
