@@ -4,10 +4,11 @@ PostType = {
 }
 
 class TwitterPoster {
-    constructor(airtableAPI, twitterAPI) {
+    constructor(airtableAPI, twitterAPI, introTweet) {
         this.airtableAPI = airtableAPI
         this.twitterAPI = twitterAPI
         this.postType = PostType.TenDays
+        this.introTweet = introTweet
 
         // Bind methods to retain `this` context
         this.isFutureEvent = this.isFutureEvent.bind(this)
@@ -24,14 +25,16 @@ class TwitterPoster {
     }
 
     getIntroTweet() {
+        if (this.introTweet) {
+            return this.introTweet
+        }
         let message = "Upcoming events"
         if (this.postType === PostType.TenDays) {
             message += " (next 10 days)"
         }
         let lines = [
-            `🧵 ${message} ⤵️`,
-            "📢 Have an event to add? Reach out!",
-            "📅 Check the calendar for full details: rally4israel.com/calendar",
+            `🧵 ${message} 🇮🇱`,
+            "🔗 Check out rally4israel.com/calendar for more details or to add events!",
         ]
 
         return lines.join('\n')
