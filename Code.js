@@ -20,6 +20,11 @@ function tweet() {
   twitterPoster.post()
 }
 
+function testTweet() {
+  let twitterAPI = new TwitterAPI()
+  twitterAPI.sendTweetThread(["Test"])
+}
+
 function mockTweet() {
   let airtableAPI = new AirtableAPI(secrets.AIRTABLE.URLS.CALENDAR, ["GCalID"])
   let twitterAPI = new MockTwitterAPI()
