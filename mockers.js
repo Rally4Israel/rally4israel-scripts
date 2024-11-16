@@ -9,6 +9,16 @@ function getUUID() {
     }
 }
 
+class MockFacebookAPI {
+    constructor() {
+        this.posts = []
+    }
+
+    post(message) {
+        this.posts.push(message)
+    }
+}
+
 class MockTwitterAPI {
     constructor() {
         this.tweets = []
