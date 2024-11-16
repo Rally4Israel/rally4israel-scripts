@@ -1,3 +1,38 @@
+class FacebookAPI {
+  post(message="Testing something...") {
+  // Replace with your Facebook Page ID and access token
+  const facebookPageId = secrets.FACEBOOK.PAGE_ID;
+  const accessToken = secrets.FACEBOOK.PAGE_ACCESS_TOKEN;
+
+  const facebookUrl = `https://graph.facebook.com/${facebookPageId}/feed`;
+
+  // Create the payload for the POST request
+  const payload = {
+    'message': message,
+    'access_token': accessToken
+  };
+
+  try {
+    // Send the POST request to Facebook's Graph API
+    const response = UrlFetchApp.fetch(facebookUrl, {
+      'method': 'post',
+      'payload': payload
+    });
+
+    // Log the response to the console
+    Logger.log('Successfully posted on Facebook: ' + response.getContentText());
+
+    // Return the response as JSON
+    return JSON.parse(response.getContentText());
+  } catch (error) {
+    // Log and throw any errors
+    Logger.log('Error posting to Facebook: ' + error.message);
+    throw new Error('Error posting to Facebook: ' + error.message);
+  }
+}
+
+}
+
 class TwitterAPI {
     // Based on https://blog.devgenius.io/how-to-create-tweet-automation-with-google-apps-script-from-google-sheet-a25b2f09ab1b
 
