@@ -63,7 +63,7 @@ describe('Tweets', () => {
         poster.post()
 
         const lastTweet = getLatestTweet(poster.twitterAPI).message
-        expect(lastTweet.includes(title)).toBe(true)
+        expect(lastTweet).toContain(title)
     })
 
     describe('Event time', () => {
@@ -76,8 +76,8 @@ describe('Tweets', () => {
             const lastTweet = getLatestTweet(poster.twitterAPI).message
             const date = "Monday, Oct 14"
             const time = "5:45 pm"
-            expect(lastTweet.includes(date)).toBe(true)
-            expect(lastTweet.includes(time)).toBe(true)
+            expect(lastTweet).toContain(date)
+            expect(lastTweet).toContain(time)
         })
         test('Shows only date if event is all day', () => {
             let poster = createPoster([
@@ -87,8 +87,8 @@ describe('Tweets', () => {
             const lastTweet = getLatestTweet(poster.twitterAPI).message
             const date = "Monday, Oct 14"
             const time = "12:00 am"
-            expect(lastTweet.includes(date)).toBe(true)
-            expect(lastTweet.includes(time)).toBe(false)
+            expect(lastTweet).toContain(date)
+            expect(lastTweet).not.toContain(time)
         })
     })
 
@@ -97,8 +97,8 @@ describe('Tweets', () => {
         let poster = createPoster([createEvent({ location: location })])
         poster.post()
         const lastTweet = getLatestTweet(poster.twitterAPI).message
-        expect(lastTweet.includes(`📌`)).toBe(true)
-        expect(lastTweet.includes(`${location}`)).toBe(true)
+        expect(lastTweet).toContain(`📌`)
+        expect(lastTweet).toContain(`${location}`)
     })
 
     test('Skips location if there is none', () => {
@@ -106,7 +106,7 @@ describe('Tweets', () => {
         let poster = createPoster([createEvent({ location: location })])
         poster.post()
         const lastTweet = getLatestTweet(poster.twitterAPI).message
-        expect(lastTweet.includes(`📌`)).toBe(false)
+        expect(lastTweet).not.toContain(`📌`)
     })
 
     describe('Event filtering', () => {
@@ -119,7 +119,7 @@ describe('Tweets', () => {
 
             expect(poster.twitterAPI.tweets.length).toBe(2) // Intro + Future Event
             const lastTweet = getLatestTweet(poster.twitterAPI).message
-            expect(lastTweet.includes("Future Event")).toBe(true)
+            expect(lastTweet).toContain("Future Event")
         })
         test('Sorts events by start time', () => {
             let poster = createPoster([
@@ -130,9 +130,9 @@ describe('Tweets', () => {
             poster.post()
 
             let tweets = poster.twitterAPI.tweets
-            expect(tweets[1].message.includes("Event 1")).toBe(true)
-            expect(tweets[2].message.includes("Event 2")).toBe(true)
-            expect(tweets[3].message.includes("Event 3")).toBe(true)
+            expect(tweets[1].message).toContain("Event 1")
+            expect(tweets[2].message).toContain("Event 2")
+            expect(tweets[3].message).toContain("Event 3")
 
         })
 
@@ -167,7 +167,7 @@ describe('Tweets', () => {
             poster.post()
             expect(poster.twitterAPI.tweets.length).toBe(2) // Intro + Event
             const lastTweet = getLatestTweet(poster.twitterAPI).message
-            expect(lastTweet.includes("Upcoming Event")).toBe(true)
+            expect(lastTweet).toContain("Upcoming Event")
         })
         test('Includes events for next 10 days', () => {
             let days = [2, 3, 4, 5, 6, 11, 12]
@@ -183,7 +183,7 @@ describe('Tweets', () => {
 
             expect(poster.twitterAPI.tweets.length).toBe(7) // Intro + 6 events
             const lastTweet = getLatestTweet(poster.twitterAPI).message
-            expect(lastTweet.includes("Day 12")).toBe(false)
+            expect(lastTweet).not.toContain("Day 12")
         })
         test('Includes next 5 events if fewer than 5 in next 10 days', () => {
             let days = [2, 3, 4, 11, 12]
@@ -199,7 +199,7 @@ describe('Tweets', () => {
 
             expect(poster.twitterAPI.tweets.length).toBe(6) // Intro + 5 events
             const lastTweet = getLatestTweet(poster.twitterAPI).message
-            expect(lastTweet.includes("12")).toBe(true)
+            expect(lastTweet).toContain("12")
         })
     })
 })
@@ -213,7 +213,7 @@ describe("Facebook Posts", () => {
         poster.post()
 
         let post = poster.facebookAPI.posts[0]
-        expect(post.includes("Event 1")).toBe(true)
-        expect(post.includes("Event 2")).toBe(true)
+        expect(post).toContain("Event 1")
+        expect(post).toContain("Event 2")
     })
 })
