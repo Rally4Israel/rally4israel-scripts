@@ -170,7 +170,7 @@ describe('Tweets', () => {
             expect(lastTweet).toContain("Upcoming Event")
         })
         test('Includes events for next 10 days', () => {
-            let days = [2, 3, 4, 5, 6, 11, 12]
+            let days = [1, 2, 3, 4, 5, 11, 12]
             let events = days.map(day => {
                 paddedDay = String(day).padStart(2, "0")
                 return createEvent({

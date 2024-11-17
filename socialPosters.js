@@ -58,8 +58,10 @@ class SocialPoster {
     }
 
     isFutureEvent(record) {
-        let start = new Date(record.fields.Start)
-        return start > this.startTime
+        let start = new Date(record.fields.Start);
+        let startDateOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+        let currentDateOnly = new Date(this.startTime.getFullYear(), this.startTime.getMonth(), this.startTime.getDate());
+        return startDateOnly >= currentDateOnly;
     }
 
     sortByStartDate(a, b) {
