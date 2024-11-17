@@ -165,5 +165,5 @@ class MockAirtableAPI {
 }
 
 if (typeof module !== 'undefined') {
-    module.exports = { MockCalendarAPI, MockAirtableAPI, MockTwitterAPI };
+    module.exports = { MockCalendarAPI, MockAirtableAPI, MockTwitterAPI, MockFacebookAPI };
 }

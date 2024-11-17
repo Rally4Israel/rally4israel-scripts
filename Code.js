@@ -1,8 +1,8 @@
+
 function syncEvents() {
   let israelChantsCalendarAPI = new GCalAPI('israelchants@gmail.com')
   let airtableEventsAPI = new AirtableAPI(secrets.AIRTABLE.URLS.EVENTS, ["GCalID"])
   let airtableUsersAPI = new AirtableAPI(secrets.AIRTABLE.URLS.USERS, ["Email"])
-
   let sycner = new GCalToAirtableSyncer(
     [israelChantsCalendarAPI],
     airtableEventsAPI,
@@ -14,10 +14,11 @@ function syncEvents() {
 function tweet() {
   let airtableAPI = new AirtableAPI(secrets.AIRTABLE.URLS.CALENDAR, ["GCalID"])
   let twitterAPI = new TwitterAPI()
-  let twitterPoster = new TwitterPoster(
-    airtableAPI, twitterAPI
+  let facebookAPI = new FacebookAPI()
+  let socialPoster = new SocialPoster(
+    airtableAPI, twitterAPI, facebookAPI
   )
-  twitterPoster.post()
+  socialPoster.post()
 }
 
 function testTweet() {
@@ -29,14 +30,18 @@ function testFacebookPost() {
   new FacebookAPI().post("Testing something...")
 }
 
-function mockTweet() {
+function mockPost() {
   let airtableAPI = new AirtableAPI(secrets.AIRTABLE.URLS.CALENDAR, ["GCalID"])
   let twitterAPI = new MockTwitterAPI()
-  let twitterPoster = new TwitterPoster(
-    airtableAPI, twitterAPI
+  let facebookAPI = new MockFacebookAPI()
+  let socialPoster = new SocialPoster(
+    airtableAPI, twitterAPI, facebookAPI
   )
-  twitterPoster.post()
+  socialPoster.post()
   twitterAPI.tweets.forEach(tweet => {
     console.log(tweet.message)
+  })
+  facebookAPI.posts.forEach(post => {
+    console.log(post)
   })
 }

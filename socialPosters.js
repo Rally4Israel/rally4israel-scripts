@@ -3,12 +3,12 @@ PostType = {
     FiveEvents: "Five Events"
 }
 
-class TwitterPoster {
-    constructor(airtableAPI, twitterAPI, introTweet) {
+class SocialPoster {
+    constructor(airtableAPI, twitterAPI, facebookAPI) {
         this.airtableAPI = airtableAPI
         this.twitterAPI = twitterAPI
         this.postType = PostType.TenDays
-        this.introTweet = introTweet
+        this.facebookAPI = facebookAPI
 
         // Bind methods to retain `this` context
         this.isFutureEvent = this.isFutureEvent.bind(this)
@@ -19,24 +19,22 @@ class TwitterPoster {
         this.startTime = new Date()
         const airtableRecords = this.getAirtableRecords()
         if (airtableRecords.length < 1) return
-        const eventTweets = airtableRecords.map(record => this.airtableRecordToTweet(record))
-        const intro = this.getIntroTweet()
-        this.twitterAPI.sendTweetThread([intro, ...eventTweets])
+        const eventMessages = airtableRecords.map(record => this.airtableRecordToMessage(record))
+        const intro = this.getIntroMessage()
+        this.twitterAPI.sendTweetThread([intro, ...eventMessages])
+        const facebookSubMessages = [intro, ...eventMessages]
+        this.facebookAPI.post(facebookSubMessages.join('\n\n'))
     }
 
-    getIntroTweet() {
-        if (this.introTweet) {
-            return this.introTweet
-        }
+    getIntroMessage() {
         let message = "Upcoming events"
         if (this.postType === PostType.TenDays) {
             message += " (next 10 days)"
         }
         let lines = [
-            `🧵 ${message} 🇮🇱`,
+            `🇮🇱 ${message} ⤵️`,
             "🔗 Check out rally4israel.com/calendar for more details or to add events!",
         ]
-
         return lines.join('\n')
     }
 
@@ -93,7 +91,7 @@ class TwitterPoster {
         })
     }
 
-    airtableRecordToTweet(record) {
+    airtableRecordToMessage(record) {
         const lines = []
         lines.push(record.fields.Title)
         const location = this.getLocation(record)
@@ -142,5 +140,5 @@ class TwitterPoster {
 }
 
 if (typeof module !== 'undefined') {
-    module.exports = { TwitterPoster };
+    module.exports = { SocialPoster };
 }
