@@ -18,13 +18,31 @@ afterEach(() => {
     jest.useRealTimers()
 });
 
+function createEvent({
+    title = "Default Event",
+    start = "2024-10-14T17:45:00.000Z",
+    allDay = false,
+    location = "",
+    recurringEventId = "",
+} = {}) {
+    return {
+        fields: {
+            Title: title,
+            "All Day": allDay,
+            Start: start,
+            Location: location,
+            "Recurring Event ID": recurringEventId
+        }
+    };
+}
+
 describe('Tweets', () => {
 
 
     test('Starts thread with intro tweet', () => {
-        let airtableEventsAPI = getAirtableEventsAPI([{
-            fields: { Title: "Some Event", Start: "2024-10-14T17:45:00.000Z" }
-        }])
+        let airtableEventsAPI = getAirtableEventsAPI([
+            createEvent({ title: "Some Event" })
+        ])
         let twitterAPI = new MockTwitterAPI()
         let facebookAPI = new MockFacebookAPI()
         let poster = new SocialPoster(
@@ -37,9 +55,9 @@ describe('Tweets', () => {
 
     test('Post includes event title', () => {
         const title = "Some Event"
-        let airtableEventsAPI = getAirtableEventsAPI([{
-            fields: { Title: title, Start: "2024-10-14T17:45:00.000Z" }
-        }])
+        let airtableEventsAPI = getAirtableEventsAPI([
+            createEvent({ title: title, start: "2024-10-14T17:45:00.000Z" })
+        ])
         let twitterAPI = new MockTwitterAPI()
         let facebookAPI = new MockFacebookAPI()
         let poster = new SocialPoster(
@@ -53,13 +71,9 @@ describe('Tweets', () => {
 
     describe('Event time', () => {
         test('Shows time and date if event has a time', () => {
-            let airtableEventsAPI = getAirtableEventsAPI([{
-                fields: {
-                    Title: "Some Event",
-                    "All Day": false,
-                    Start: "2024-10-14T17:45:00.000Z"
-                }
-            }])
+            let airtableEventsAPI = getAirtableEventsAPI([
+                createEvent({ start: "2024-10-14T17:45:00.000Z", allDay: false })
+            ])
             let twitterAPI = new MockTwitterAPI()
             let facebookAPI = new MockFacebookAPI()
             let poster = new SocialPoster(
@@ -74,14 +88,9 @@ describe('Tweets', () => {
             expect(lastTweet.includes(time)).toBe(true)
         })
         test('Shows only date if event is all day', () => {
-            let airtableEventsAPI = getAirtableEventsAPI([{
-                fields: {
-                    Title: "Some Event",
-                    "All Day": true,
-                    Start: "2024-10-14T00:00:00.000Z"
-
-                }
-            }])
+            let airtableEventsAPI = getAirtableEventsAPI([
+                createEvent({ start: "2024-10-14T00:00:00.000Z", allDay: true })
+            ])
             let twitterAPI = new MockTwitterAPI()
             let facebookAPI = new MockFacebookAPI()
             let poster = new SocialPoster(
@@ -98,15 +107,9 @@ describe('Tweets', () => {
 
     test('Includes location if event has one', () => {
         const location = "123 Sesame St, NY"
-        let airtableEventsAPI = getAirtableEventsAPI([{
-            fields: {
-                Title: "Some Event",
-                "All Day": true,
-                Start: "2024-10-14T00:00:00.000Z",
-                Location: location
-
-            }
-        }])
+        let airtableEventsAPI = getAirtableEventsAPI([
+            createEvent({ location: location })
+        ])
         let twitterAPI = new MockTwitterAPI()
         let facebookAPI = new MockFacebookAPI()
         let poster = new SocialPoster(
@@ -120,15 +123,9 @@ describe('Tweets', () => {
 
     test('Skips location if there is none', () => {
         const location = ""
-        let airtableEventsAPI = getAirtableEventsAPI([{
-            fields: {
-                Title: "Some Event",
-                "All Day": true,
-                Start: "2024-10-14T00:00:00.000Z",
-                Location: location
-
-            }
-        }])
+        let airtableEventsAPI = getAirtableEventsAPI([
+            createEvent({ location: location })
+        ])
         let twitterAPI = new MockTwitterAPI()
         let facebookAPI = new MockFacebookAPI()
         let poster = new SocialPoster(
@@ -141,18 +138,10 @@ describe('Tweets', () => {
 
     describe('Event filtering', () => {
         test('Only posts future events', () => {
-            let airtableEventsAPI = getAirtableEventsAPI([{
-                fields: {
-                    Title: "Past Event",
-                    Start: "2020-10-14T17:45:00.000Z"
-                }
-            },
-            {
-                fields: {
-                    Title: "Future Event",
-                    Start: "2022-10-14T17:45:00.000Z"
-                }
-            }])
+            let airtableEventsAPI = getAirtableEventsAPI([
+                createEvent({ title: "Past Event", start: "2020-10-14T17:45:00.000Z" }),
+                createEvent({ title: "Future Event", start: "2022-10-14T17:45:00.000Z" }),
+            ])
             let twitterAPI = new MockTwitterAPI()
             let facebookAPI = new MockFacebookAPI()
             let poster = new SocialPoster(
@@ -165,24 +154,11 @@ describe('Tweets', () => {
             expect(lastTweet.includes("Future Event")).toBe(true)
         })
         test('Sorts events by start time', () => {
-            let airtableEventsAPI = getAirtableEventsAPI([{
-                fields: {
-                    Title: "Event 3",
-                    Start: "2022-03-14T17:45:00.000Z"
-                }
-            },
-            {
-                fields: {
-                    Title: "Event 1",
-                    Start: "2022-01-14T17:45:00.000Z"
-                }
-            },
-            {
-                fields: {
-                    Title: "Event 2",
-                    Start: "2022-02-14T17:45:00.000Z"
-                }
-            }])
+            let airtableEventsAPI = getAirtableEventsAPI([
+                createEvent({ title: "Event 3", start: "2022-03-14T17:45:00.000Z" }),
+                createEvent({ title: "Event 1", start: "2022-01-14T17:45:00.000Z" }),
+                createEvent({ title: "Event 2", start: "2022-02-14T17:45:00.000Z" }),
+            ])
             let twitterAPI = new MockTwitterAPI()
             let facebookAPI = new MockFacebookAPI()
             let poster = new SocialPoster(
@@ -198,12 +174,9 @@ describe('Tweets', () => {
         })
 
         test('Does not post if no future events', () => {
-            let airtableEventsAPI = getAirtableEventsAPI([{
-                fields: {
-                    Title: "Past Event",
-                    Start: "2020-10-14T17:45:00.000Z"
-                }
-            }])
+            let airtableEventsAPI = getAirtableEventsAPI([
+                createEvent({ title: "Past Event", start: "2020-10-14T17:45:00.000Z" })
+            ])
             let twitterAPI = new MockTwitterAPI()
             let facebookAPI = new MockFacebookAPI()
             let poster = new SocialPoster(
@@ -216,27 +189,22 @@ describe('Tweets', () => {
 
         test('Only posts earliest upcoming instance of recurring event', () => {
             let recurringEventId = "some-id"
-            let airtableEventsAPI = getAirtableEventsAPI([{
-                fields: {
-                    Title: "Past Event",
-                    Start: "2020-10-14T17:45:00.000Z",
-                    "Recurring Event ID": recurringEventId
-                }
-            },
-            {
-                fields: {
-                    Title: "Upcoming Event",
-                    Start: "2021-10-14T17:45:00.000Z",
-                    "Recurring Event ID": recurringEventId
-                }
-            },
-            {
-                fields: {
-                    Title: "Later Event",
-                    Start: "2022-10-14T17:45:00.000Z",
-                    "Recurring Event ID": recurringEventId
-                }
-            }
+            let airtableEventsAPI = getAirtableEventsAPI([
+                createEvent({
+                    title: "Past Event",
+                    start: "2020-10-14T17:45:00.000Z",
+                    recurringEventId: recurringEventId
+                }),
+                createEvent({
+                    title: "Upcoming Event",
+                    start: "2021-10-14T17:45:00.000Z",
+                    recurringEventId: recurringEventId
+                }),
+                createEvent({
+                    title: "Later Event",
+                    start: "2022-10-14T17:45:00.000Z",
+                    recurringEventId: recurringEventId
+                }),
             ])
             let twitterAPI = new MockTwitterAPI()
             let facebookAPI = new MockFacebookAPI()
@@ -252,12 +220,10 @@ describe('Tweets', () => {
             let days = [2, 3, 4, 5, 6, 11, 12]
             let events = days.map(day => {
                 paddedDay = String(day).padStart(2, "0")
-                return {
-                    fields: {
-                        Title: `Day ${day} Event`,
-                        Start: `2021-01-${paddedDay}T00:00:00Z`
-                    }
-                }
+                return createEvent({
+                    title: `Day ${day} Event`,
+                    start: `2021-01-${paddedDay}T00:00:00Z`
+                })
             })
             let airtableEventsAPI = getAirtableEventsAPI(events)
             let twitterAPI = new MockTwitterAPI()
@@ -275,12 +241,10 @@ describe('Tweets', () => {
             let days = [2, 3, 4, 11, 12]
             let events = days.map(day => {
                 paddedDay = String(day).padStart(2, "0")
-                return {
-                    fields: {
-                        Title: `Day ${day} Event`,
-                        Start: `2021-01-${paddedDay}T00:00:00Z`
-                    }
-                }
+                return createEvent({
+                    title: `Day ${day} Event`,
+                    start: `2021-01-${paddedDay}T00:00:00Z`
+                })
             })
             let airtableEventsAPI = getAirtableEventsAPI(events)
             let twitterAPI = new MockTwitterAPI()
@@ -299,18 +263,10 @@ describe('Tweets', () => {
 
 describe("Facebook Posts", () => {
     test('Includes Events in post', () => {
-        let airtableEventsAPI = getAirtableEventsAPI([{
-            fields: {
-                Title: "Event 1",
-                Start: "2022-01-14T17:45:00.000Z"
-            }
-        },
-        {
-            fields: {
-                Title: "Event 2",
-                Start: "2022-02-14T17:45:00.000Z"
-            }
-        }])
+        let airtableEventsAPI = getAirtableEventsAPI([
+            createEvent({ title: "Event 1", start: "2022-01-14T17:45:00.000Z" }),
+            createEvent({ title: "Event 2", start: "2022-02-14T17:45:00.000Z" })
+        ])
         let twitterAPI = new MockTwitterAPI()
         let facebookAPI = new MockFacebookAPI()
         let poster = new SocialPoster(
