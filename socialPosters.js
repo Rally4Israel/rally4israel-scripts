@@ -9,10 +9,6 @@ class SocialPoster {
         this.twitterAPI = twitterAPI
         this.postType = PostType.TenDays
         this.facebookAPI = facebookAPI
-
-        // Bind methods to retain `this` context
-        this.isFutureEvent = this.isFutureEvent.bind(this)
-        this.sortByStartDate = this.sortByStartDate.bind(this)
     }
 
     post() {
@@ -40,8 +36,8 @@ class SocialPoster {
 
     getAirtableRecords() {
         let records = this.airtableAPI.getAllRecords()
-            .filter(this.isFutureEvent)
-            .sort(this.sortByStartDate)
+            .filter(record => this.isFutureEvent(record))
+            .sort((a, b) => this.sortByStartDate(a, b))
         records = this.filterOutRecurringEvents(records)
         let eventsBeforeCutoff = this.getEventsBeforeCutoff(records, 10)
         if (eventsBeforeCutoff.length >= 5) {
