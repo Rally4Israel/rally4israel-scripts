@@ -86,11 +86,11 @@ class SocialPoster {
     airtableRecordToMessage(record) {
         const lines = []
         lines.push(record.fields.Title)
+        lines.push(...this.getTweetEventTime(record))
         const location = this.getLocation(record)
         if (location) {
             lines.push(location)
         }
-        lines.push(...this.getTweetEventTime(record))
         return lines.join('\n')
     }
 
