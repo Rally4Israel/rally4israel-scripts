@@ -70,12 +70,6 @@ class SocialPoster {
         return new Date(a.fields.Start) - new Date(b.fields.Start)
     }
 
-    sortEventsByDate(records) {
-        records.sort((a, b) => {
-            return new Date(a.fields.Start) - new Date(b.fields.Start)
-        })
-    }
-
     filterOutRecurringEvents(records) {
         const recurringEventIds = {}
         return records.filter(record => {
