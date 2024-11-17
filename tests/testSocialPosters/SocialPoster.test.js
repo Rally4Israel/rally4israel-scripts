@@ -36,68 +36,55 @@ function createEvent({
     };
 }
 
+function createPoster(events = []) {
+    const airtableEventsAPI = getAirtableEventsAPI(events);
+    const twitterAPI = new MockTwitterAPI();
+    const facebookAPI = new MockFacebookAPI();
+    return new SocialPoster(airtableEventsAPI, twitterAPI, facebookAPI);
+}
+
 describe('Tweets', () => {
 
 
     test('Starts thread with intro tweet', () => {
-        let airtableEventsAPI = getAirtableEventsAPI([
+        let poster = createPoster([
             createEvent({ title: "Some Event" })
         ])
-        let twitterAPI = new MockTwitterAPI()
-        let facebookAPI = new MockFacebookAPI()
-        let poster = new SocialPoster(
-            airtableEventsAPI, twitterAPI, facebookAPI
-        )
         poster.post()
 
-        expect(twitterAPI.tweets.length).toStrictEqual(2) // Intro + Event
+        expect(poster.twitterAPI.tweets.length).toStrictEqual(2) // Intro + Event
     })
 
     test('Post includes event title', () => {
         const title = "Some Event"
-        let airtableEventsAPI = getAirtableEventsAPI([
+        let poster = createPoster([
             createEvent({ title: title, start: "2024-10-14T17:45:00.000Z" })
         ])
-        let twitterAPI = new MockTwitterAPI()
-        let facebookAPI = new MockFacebookAPI()
-        let poster = new SocialPoster(
-            airtableEventsAPI, twitterAPI, facebookAPI
-        )
         poster.post()
 
-        const lastTweet = getLatestTweet(twitterAPI).message
+        const lastTweet = getLatestTweet(poster.twitterAPI).message
         expect(lastTweet.includes(title)).toBe(true)
     })
 
     describe('Event time', () => {
         test('Shows time and date if event has a time', () => {
-            let airtableEventsAPI = getAirtableEventsAPI([
+            let poster = createPoster([
                 createEvent({ start: "2024-10-14T17:45:00.000Z", allDay: false })
             ])
-            let twitterAPI = new MockTwitterAPI()
-            let facebookAPI = new MockFacebookAPI()
-            let poster = new SocialPoster(
-                airtableEventsAPI, twitterAPI, facebookAPI
-            )
             poster.post()
 
-            const lastTweet = getLatestTweet(twitterAPI).message
+            const lastTweet = getLatestTweet(poster.twitterAPI).message
             const date = "Monday, Oct 14"
             const time = "5:45 pm"
             expect(lastTweet.includes(date)).toBe(true)
             expect(lastTweet.includes(time)).toBe(true)
         })
         test('Shows only date if event is all day', () => {
-            let airtableEventsAPI = getAirtableEventsAPI([
+            let poster = createPoster([
                 createEvent({ start: "2024-10-14T00:00:00.000Z", allDay: true })
             ])
-            let twitterAPI = new MockTwitterAPI()
-            let facebookAPI = new MockFacebookAPI()
-            let poster = new SocialPoster(
-                airtableEventsAPI, twitterAPI, facebookAPI
-            )
             poster.post()
-            const lastTweet = getLatestTweet(twitterAPI).message
+            const lastTweet = getLatestTweet(poster.twitterAPI).message
             const date = "Monday, Oct 14"
             const time = "12:00 am"
             expect(lastTweet.includes(date)).toBe(true)
@@ -107,66 +94,42 @@ describe('Tweets', () => {
 
     test('Includes location if event has one', () => {
         const location = "123 Sesame St, NY"
-        let airtableEventsAPI = getAirtableEventsAPI([
-            createEvent({ location: location })
-        ])
-        let twitterAPI = new MockTwitterAPI()
-        let facebookAPI = new MockFacebookAPI()
-        let poster = new SocialPoster(
-            airtableEventsAPI, twitterAPI, facebookAPI
-        )
+        let poster = createPoster([createEvent({ location: location })])
         poster.post()
-        const lastTweet = getLatestTweet(twitterAPI).message
+        const lastTweet = getLatestTweet(poster.twitterAPI).message
         expect(lastTweet.includes(`📌`)).toBe(true)
         expect(lastTweet.includes(`${location}`)).toBe(true)
     })
 
     test('Skips location if there is none', () => {
         const location = ""
-        let airtableEventsAPI = getAirtableEventsAPI([
-            createEvent({ location: location })
-        ])
-        let twitterAPI = new MockTwitterAPI()
-        let facebookAPI = new MockFacebookAPI()
-        let poster = new SocialPoster(
-            airtableEventsAPI, twitterAPI, facebookAPI
-        )
+        let poster = createPoster([createEvent({ location: location })])
         poster.post()
-        const lastTweet = getLatestTweet(twitterAPI).message
+        const lastTweet = getLatestTweet(poster.twitterAPI).message
         expect(lastTweet.includes(`📌`)).toBe(false)
     })
 
     describe('Event filtering', () => {
         test('Only posts future events', () => {
-            let airtableEventsAPI = getAirtableEventsAPI([
+            let poster = createPoster([
                 createEvent({ title: "Past Event", start: "2020-10-14T17:45:00.000Z" }),
                 createEvent({ title: "Future Event", start: "2022-10-14T17:45:00.000Z" }),
             ])
-            let twitterAPI = new MockTwitterAPI()
-            let facebookAPI = new MockFacebookAPI()
-            let poster = new SocialPoster(
-                airtableEventsAPI, twitterAPI, facebookAPI
-            )
             poster.post()
 
-            expect(twitterAPI.tweets.length).toBe(2) // Intro + Future Event
-            const lastTweet = getLatestTweet(twitterAPI).message
+            expect(poster.twitterAPI.tweets.length).toBe(2) // Intro + Future Event
+            const lastTweet = getLatestTweet(poster.twitterAPI).message
             expect(lastTweet.includes("Future Event")).toBe(true)
         })
         test('Sorts events by start time', () => {
-            let airtableEventsAPI = getAirtableEventsAPI([
+            let poster = createPoster([
                 createEvent({ title: "Event 3", start: "2022-03-14T17:45:00.000Z" }),
                 createEvent({ title: "Event 1", start: "2022-01-14T17:45:00.000Z" }),
                 createEvent({ title: "Event 2", start: "2022-02-14T17:45:00.000Z" }),
             ])
-            let twitterAPI = new MockTwitterAPI()
-            let facebookAPI = new MockFacebookAPI()
-            let poster = new SocialPoster(
-                airtableEventsAPI, twitterAPI, facebookAPI
-            )
             poster.post()
 
-            let tweets = twitterAPI.tweets
+            let tweets = poster.twitterAPI.tweets
             expect(tweets[1].message.includes("Event 1")).toBe(true)
             expect(tweets[2].message.includes("Event 2")).toBe(true)
             expect(tweets[3].message.includes("Event 3")).toBe(true)
@@ -174,22 +137,17 @@ describe('Tweets', () => {
         })
 
         test('Does not post if no future events', () => {
-            let airtableEventsAPI = getAirtableEventsAPI([
+            let poster = createPoster([
                 createEvent({ title: "Past Event", start: "2020-10-14T17:45:00.000Z" })
             ])
-            let twitterAPI = new MockTwitterAPI()
-            let facebookAPI = new MockFacebookAPI()
-            let poster = new SocialPoster(
-                airtableEventsAPI, twitterAPI, facebookAPI
-            )
             poster.post()
 
-            expect(twitterAPI.tweets.length).toBe(0)
+            expect(poster.twitterAPI.tweets.length).toBe(0)
         })
 
         test('Only posts earliest upcoming instance of recurring event', () => {
             let recurringEventId = "some-id"
-            let airtableEventsAPI = getAirtableEventsAPI([
+            let poster = createPoster([
                 createEvent({
                     title: "Past Event",
                     start: "2020-10-14T17:45:00.000Z",
@@ -206,14 +164,9 @@ describe('Tweets', () => {
                     recurringEventId: recurringEventId
                 }),
             ])
-            let twitterAPI = new MockTwitterAPI()
-            let facebookAPI = new MockFacebookAPI()
-            let poster = new SocialPoster(
-                airtableEventsAPI, twitterAPI, facebookAPI
-            )
             poster.post()
-            expect(twitterAPI.tweets.length).toBe(2) // Intro + Event
-            const lastTweet = getLatestTweet(twitterAPI).message
+            expect(poster.twitterAPI.tweets.length).toBe(2) // Intro + Event
+            const lastTweet = getLatestTweet(poster.twitterAPI).message
             expect(lastTweet.includes("Upcoming Event")).toBe(true)
         })
         test('Includes events for next 10 days', () => {
@@ -225,16 +178,11 @@ describe('Tweets', () => {
                     start: `2021-01-${paddedDay}T00:00:00Z`
                 })
             })
-            let airtableEventsAPI = getAirtableEventsAPI(events)
-            let twitterAPI = new MockTwitterAPI()
-            let facebookAPI = new MockFacebookAPI()
-            let poster = new SocialPoster(
-                airtableEventsAPI, twitterAPI, facebookAPI
-            )
+            let poster = createPoster(events)
             poster.post()
 
-            expect(twitterAPI.tweets.length).toBe(7) // Intro + 6 events
-            const lastTweet = getLatestTweet(twitterAPI).message
+            expect(poster.twitterAPI.tweets.length).toBe(7) // Intro + 6 events
+            const lastTweet = getLatestTweet(poster.twitterAPI).message
             expect(lastTweet.includes("Day 12")).toBe(false)
         })
         test('Includes next 5 events if fewer than 5 in next 10 days', () => {
@@ -246,16 +194,11 @@ describe('Tweets', () => {
                     start: `2021-01-${paddedDay}T00:00:00Z`
                 })
             })
-            let airtableEventsAPI = getAirtableEventsAPI(events)
-            let twitterAPI = new MockTwitterAPI()
-            let facebookAPI = new MockFacebookAPI()
-            let poster = new SocialPoster(
-                airtableEventsAPI, twitterAPI, facebookAPI
-            )
+            let poster = createPoster(events)
             poster.post()
 
-            expect(twitterAPI.tweets.length).toBe(6) // Intro + 5 events
-            const lastTweet = getLatestTweet(twitterAPI).message
+            expect(poster.twitterAPI.tweets.length).toBe(6) // Intro + 5 events
+            const lastTweet = getLatestTweet(poster.twitterAPI).message
             expect(lastTweet.includes("12")).toBe(true)
         })
     })
@@ -263,18 +206,13 @@ describe('Tweets', () => {
 
 describe("Facebook Posts", () => {
     test('Includes Events in post', () => {
-        let airtableEventsAPI = getAirtableEventsAPI([
+        let poster = createPoster([
             createEvent({ title: "Event 1", start: "2022-01-14T17:45:00.000Z" }),
             createEvent({ title: "Event 2", start: "2022-02-14T17:45:00.000Z" })
         ])
-        let twitterAPI = new MockTwitterAPI()
-        let facebookAPI = new MockFacebookAPI()
-        let poster = new SocialPoster(
-            airtableEventsAPI, twitterAPI, facebookAPI
-        )
         poster.post()
 
-        let post = facebookAPI.posts[0]
+        let post = poster.facebookAPI.posts[0]
         expect(post.includes("Event 1")).toBe(true)
         expect(post.includes("Event 2")).toBe(true)
     })
