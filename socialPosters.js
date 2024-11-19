@@ -23,7 +23,7 @@ class SocialPoster {
     }
 
     getIntroMessage() {
-        let message = "Upcoming events"
+        let message = "Upcoming rallies"
         if (this.postType === PostType.TenDays) {
             message += " (next 10 days)"
         }
