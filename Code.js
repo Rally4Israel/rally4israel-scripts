@@ -11,7 +11,7 @@ function syncEvents() {
   sycner.sync()
 }
 
-function tweet() {
+function post() {
   let airtableAPI = new AirtableAPI(secrets.AIRTABLE.URLS.CALENDAR, ["GCalID"])
   let twitterAPI = new TwitterAPI()
   let facebookAPI = new FacebookAPI()
