@@ -237,7 +237,8 @@ class AirtableAPI {
                 let result = JSON.parse(response);
                 allRecords = allRecords.concat(result.records);
                 if (result.offset) {
-                    urlWithOffset = `${this.url}?offset=${result.offset}`;
+                  const separator = this.url.includes('?') ? '&' : '?';
+                  urlWithOffset = `${this.url}${separator}offset=${result.offset}`;
                 } else {
                     hasMorePages = false;
                 }
