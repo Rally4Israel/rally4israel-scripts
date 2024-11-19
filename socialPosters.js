@@ -23,7 +23,7 @@ class SocialPoster {
     }
 
     getIntroMessage() {
-        let message = "Upcoming rallies"
+        let message = "Upcoming rallies for Israel, the Jewish community, and the hostages' release"
         if (this.postType === PostType.TenDays) {
             message += " (next 10 days)"
         }
