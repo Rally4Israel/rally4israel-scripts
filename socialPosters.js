@@ -29,7 +29,8 @@ class SocialPoster {
         }
         let lines = [
             `🇮🇱 ${message} ⤵️`,
-            "🔗 Check out rally4israel.com/calendar for more details or to add events!",
+            "🔗 Check out rally4israel.com/calendar for more details.",
+            "👉 Know about an event not listed here? Send us the info!"
         ]
         return lines.join('\n')
     }
