@@ -48,19 +48,7 @@ class EventImageGenerator:
             width=self.border_thickness,
         )
 
-        # Load fonts
-        try:
-            # Regular text font
-            font_event = ImageFont.truetype(
-                "/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf", 50
-            )
-            font_details = ImageFont.truetype(
-                "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf", 45
-            )
-        except OSError:
-            print("Font not found, using default font.")
-            font_event = ImageFont.load_default()
-            font_details = font_event
+        self.load_fonts()
 
         # Load icon images
         try:
@@ -140,7 +128,7 @@ class EventImageGenerator:
                 return y_position + text_height + 20
 
         # Wrap and draw the event name
-        event_lines = wrap_text(self.event.name, font_event, max_width)
+        event_lines = wrap_text(self.event.name, self.font_event, max_width)
         y_position = padding
 
         for line in event_lines:
@@ -148,16 +136,24 @@ class EventImageGenerator:
 
         # Draw the event date with calendar icon (only on the first line)
         y_position = draw_icon_and_text(
-            calendar_icon, self.event.date, y_position, font_details, is_first_line=True
+            calendar_icon,
+            self.event.date,
+            y_position,
+            self.font_details,
+            is_first_line=True,
         )
 
         # Draw the event time with clock icon (only on the first line)
         y_position = draw_icon_and_text(
-            clock_icon, self.event.time, y_position, font_details, is_first_line=True
+            clock_icon,
+            self.event.time,
+            y_position,
+            self.font_details,
+            is_first_line=True,
         )
 
         # Wrap and draw the event location (fix the wrapping for longer location)
-        location_lines = wrap_text(self.event.location, font_details, max_width)
+        location_lines = wrap_text(self.event.location, self.font_details, max_width)
 
         # Adjust the spacing between the first and second lines of location with this variable
         space_between_first_and_second_line = -20  # This is the value to adjust only the space between the first and second location lines
@@ -167,7 +163,11 @@ class EventImageGenerator:
             if i == 0:
                 # Draw the map pin icon and the first line of location
                 y_position = draw_icon_and_text(
-                    map_pin_icon, line, y_position, font_details, is_first_line=True
+                    map_pin_icon,
+                    line,
+                    y_position,
+                    self.font_details,
+                    is_first_line=True,
                 )
             else:
                 # For the second line and beyond, don't show the map pin and add reduced space only between the first and second line
@@ -176,12 +176,12 @@ class EventImageGenerator:
                         None,
                         line,
                         y_position + space_between_first_and_second_line,
-                        font_details,
+                        self.font_details,
                         is_first_line=False,
                     )
                 else:
                     y_position = draw_icon_and_text(
-                        None, line, y_position, font_details, is_first_line=False
+                        None, line, y_position, self.font_details, is_first_line=False
                     )
 
         # Calculate total content height to center the text
@@ -224,22 +224,34 @@ class EventImageGenerator:
 
         # Redraw event name
         for line in event_lines:
-            draw.text((padding, y_position), line, font=font_event, fill="white")
+            draw.text((padding, y_position), line, font=self.font_event, fill="white")
             y_position += 70  # Add some vertical space between lines
 
         # Redraw event date and time with icons
         y_position = draw_icon_and_text(
-            calendar_icon, self.event.date, y_position, font_details, is_first_line=True
+            calendar_icon,
+            self.event.date,
+            y_position,
+            self.font_details,
+            is_first_line=True,
         )
         y_position = draw_icon_and_text(
-            clock_icon, self.event.time, y_position, font_details, is_first_line=True
+            clock_icon,
+            self.event.time,
+            y_position,
+            self.font_details,
+            is_first_line=True,
         )
 
         # Redraw the event location
         for i, line in enumerate(location_lines):
             if i == 0:
                 y_position = draw_icon_and_text(
-                    map_pin_icon, line, y_position, font_details, is_first_line=True
+                    map_pin_icon,
+                    line,
+                    y_position,
+                    self.font_details,
+                    is_first_line=True,
                 )
             else:
                 if i == 1:
@@ -247,12 +259,12 @@ class EventImageGenerator:
                         None,
                         line,
                         y_position + space_between_first_and_second_line,
-                        font_details,
+                        self.font_details,
                         is_first_line=False,
                     )
                 else:
                     y_position = draw_icon_and_text(
-                        None, line, y_position, font_details, is_first_line=False
+                        None, line, y_position, self.font_details, is_first_line=False
                     )
 
         # Save the image
@@ -260,6 +272,19 @@ class EventImageGenerator:
 
         # Show the image
         base.show()
+
+    def load_fonts(self):
+        try:
+            # Regular text font
+            self.font_event = ImageFont.truetype(
+                "/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf", 50
+            )
+            self.font_details = ImageFont.truetype(
+                "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf", 45
+            )
+        except OSError:
+            print("Font not found, using default font.")
+            self.font_event = self.font_details = ImageFont.load_default()
 
 
 # Sample event details
