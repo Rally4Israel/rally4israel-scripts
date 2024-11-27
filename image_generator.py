@@ -12,6 +12,10 @@ class Event:
 
 
 class EventImageGenerator:
+    calendar_icon = Image.open("icons/calendar.png")
+    clock_icon = Image.open("icons/clock.png")
+    map_pin_icon = Image.open("icons/map-pin.png")
+
     def __init__(self, event):
         self.event = event
         self.width = self.height = 1080
@@ -49,15 +53,6 @@ class EventImageGenerator:
         )
 
         self.load_fonts()
-
-        # Load icon images
-        try:
-            calendar_icon = Image.open("icons/calendar.png")
-            clock_icon = Image.open("icons/clock.png")
-            map_pin_icon = Image.open("icons/map-pin.png")
-        except FileNotFoundError:
-            print("Error: One or more icons not found in the 'icons' directory.")
-            return
 
         # Set some padding for the text
         padding = 50
@@ -136,7 +131,7 @@ class EventImageGenerator:
 
         # Draw the event date with calendar icon (only on the first line)
         y_position = draw_icon_and_text(
-            calendar_icon,
+            self.calendar_icon,
             self.event.date,
             y_position,
             self.font_details,
@@ -145,7 +140,7 @@ class EventImageGenerator:
 
         # Draw the event time with clock icon (only on the first line)
         y_position = draw_icon_and_text(
-            clock_icon,
+            self.clock_icon,
             self.event.time,
             y_position,
             self.font_details,
@@ -163,7 +158,7 @@ class EventImageGenerator:
             if i == 0:
                 # Draw the map pin icon and the first line of location
                 y_position = draw_icon_and_text(
-                    map_pin_icon,
+                    self.map_pin_icon,
                     line,
                     y_position,
                     self.font_details,
@@ -229,14 +224,14 @@ class EventImageGenerator:
 
         # Redraw event date and time with icons
         y_position = draw_icon_and_text(
-            calendar_icon,
+            self.calendar_icon,
             self.event.date,
             y_position,
             self.font_details,
             is_first_line=True,
         )
         y_position = draw_icon_and_text(
-            clock_icon,
+            self.clock_icon,
             self.event.time,
             y_position,
             self.font_details,
@@ -247,7 +242,7 @@ class EventImageGenerator:
         for i, line in enumerate(location_lines):
             if i == 0:
                 y_position = draw_icon_and_text(
-                    map_pin_icon,
+                    self.map_pin_icon,
                     line,
                     y_position,
                     self.font_details,
