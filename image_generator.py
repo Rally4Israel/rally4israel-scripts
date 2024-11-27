@@ -35,6 +35,9 @@ class EventImageGenerator:
             self.background_color,
         )
 
+    def wrap_text(self, text, max_chars=40):
+        return textwrap.wrap(text, width=max_chars)
+
     def generate(self):
         base = self.create_base_image()
         draw = ImageDraw.Draw(base)
@@ -54,15 +57,6 @@ class EventImageGenerator:
         )
 
         self.load_fonts()
-
-        max_width = self.width - 2 * self.padding
-
-        # Function to wrap text into multiple lines if it exceeds the width
-        def wrap_text(text, font, max_width):
-            wrapped_lines = textwrap.wrap(
-                text, width=40
-            )  # Wrap text after a certain number of characters
-            return wrapped_lines
 
         # Function to draw icons and corresponding text with proper alignment
         def draw_icon_and_text(icon, text, y_position, font, is_first_line=False):
@@ -131,7 +125,7 @@ class EventImageGenerator:
                 return y_position + text_height + 20
 
         # Wrap and draw the event name
-        event_lines = wrap_text(self.event.name, self.font_event, max_width)
+        event_lines = self.wrap_text(self.event.name)
         y_position = self.padding
 
         for line in event_lines:
@@ -156,7 +150,7 @@ class EventImageGenerator:
         )
 
         # Wrap and draw the event location (fix the wrapping for longer location)
-        location_lines = wrap_text(self.event.location, self.font_details, max_width)
+        location_lines = self.wrap_text(self.event.location)
 
         # Adjust the spacing between the first and second lines of location with this variable
         space_between_first_and_second_line = -20  # This is the value to adjust only the space between the first and second location lines
