@@ -15,6 +15,7 @@ class EventImageGenerator:
     calendar_icon = Image.open("icons/calendar.png")
     clock_icon = Image.open("icons/clock.png")
     map_pin_icon = Image.open("icons/map-pin.png")
+    padding = 50
 
     def __init__(self, event):
         self.event = event
@@ -54,9 +55,7 @@ class EventImageGenerator:
 
         self.load_fonts()
 
-        # Set some padding for the text
-        padding = 50
-        max_width = self.width - 2 * padding
+        max_width = self.width - 2 * self.padding
 
         # Function to wrap text into multiple lines if it exceeds the width
         def wrap_text(text, font, max_width):
@@ -72,7 +71,9 @@ class EventImageGenerator:
                 icon_resized = icon.resize((40, 40))
 
                 # Get the bounding box of the text to calculate its height
-                text_bbox = draw.textbbox((padding + 50, y_position), text, font=font)
+                text_bbox = draw.textbbox(
+                    (self.padding + 50, y_position), text, font=font
+                )
                 text_height = text_bbox[3] - text_bbox[1]  # Height of the text box
 
                 # Calculate the total height that will be occupied by the icon and the text
@@ -92,10 +93,15 @@ class EventImageGenerator:
                 # Place icon and text on the image (only draw the icon if it's the first line)
                 if is_first_line:
                     base.paste(
-                        icon_resized, (padding, y_position + icon_offset), icon_resized
+                        icon_resized,
+                        (self.padding, y_position + icon_offset),
+                        icon_resized,
                     )  # Place icon
                 draw.text(
-                    (padding + (50 if is_first_line else 0), y_position + text_offset),
+                    (
+                        self.padding + (50 if is_first_line else 0),
+                        y_position + text_offset,
+                    ),
                     text,
                     font=font,
                     fill="white",
@@ -107,13 +113,15 @@ class EventImageGenerator:
                 )  # Add some space for the next section
             else:
                 # Just draw text if there's no icon
-                text_bbox = draw.textbbox((padding + 50, y_position), text, font=font)
+                text_bbox = draw.textbbox(
+                    (self.padding + 50, y_position), text, font=font
+                )
                 text_height = text_bbox[3] - text_bbox[1]
                 text_offset = text_height // 2
 
                 # Place the text on the image
                 draw.text(
-                    (padding + 50, y_position + text_offset),
+                    (self.padding + 50, y_position + text_offset),
                     text,
                     font=font,
                     fill="white",
@@ -124,7 +132,7 @@ class EventImageGenerator:
 
         # Wrap and draw the event name
         event_lines = wrap_text(self.event.name, self.font_event, max_width)
-        y_position = padding
+        y_position = self.padding
 
         for line in event_lines:
             y_position += 70  # Add some vertical space between lines
@@ -180,7 +188,9 @@ class EventImageGenerator:
                     )
 
         # Calculate total content height to center the text
-        total_content_height = y_position - padding  # The total height of the content
+        total_content_height = (
+            y_position - self.padding
+        )  # The total height of the content
 
         # Calculate the starting Y position to center the content vertically
         y_position_offset = (
@@ -214,12 +224,14 @@ class EventImageGenerator:
 
         # Re-initialize y_position with the vertical offset applied
         y_position = (
-            padding + y_position_offset
+            self.padding + y_position_offset
         )  # Apply the offset for vertical centering
 
         # Redraw event name
         for line in event_lines:
-            draw.text((padding, y_position), line, font=self.font_event, fill="white")
+            draw.text(
+                (self.padding, y_position), line, font=self.font_event, fill="white"
+            )
             y_position += 70  # Add some vertical space between lines
 
         # Redraw event date and time with icons
