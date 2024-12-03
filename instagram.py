@@ -12,8 +12,8 @@ def main():
     from instagrapi import Client
 
     cl = Client()
-    print(INSTAGRAM_USERNAME)
-    print(INSTAGRAM_PASSWORD)
+    print(len(INSTAGRAM_USERNAME))
+    print(len(INSTAGRAM_PASSWORD))
     cl.login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
     # collaborators_usernames = ["elizabeth.rand.311", "herutnyc"]
     collaborators_usernames = ["ari.abramowitz1"]
