@@ -12,9 +12,9 @@ class Event:
 
 
 class EventImageGenerator:
-    calendar_icon = Image.open("icons/calendar.png")
-    clock_icon = Image.open("icons/clock.png")
-    map_pin_icon = Image.open("icons/map-pin.png")
+    calendar_icon = Image.open("img/icons/calendar.png")
+    clock_icon = Image.open("img/icons/clock.png")
+    map_pin_icon = Image.open("img/icons/map-pin.png")
     padding = 50
 
     def __init__(self, event):
