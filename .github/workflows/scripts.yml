@@ -1,9 +1,6 @@
 name: Run Scripts
 
 on:
-  #   schedule:
-  #     # Runs at 8:00 AM UTC every day
-  #     - cron: "0 8 * * *"
   workflow_dispatch: # Allows manual trigger
 
 jobs:
@@ -33,6 +30,9 @@ jobs:
             curl -sSL https://install.python-poetry.org | python3 -
           fi
 
+      - name: Verify Poetry Installation
+        run: poetry --version
+
       - name: Configure Poetry to Use Project Directory
         run: poetry config virtualenvs.in-project true
 
@@ -53,6 +53,5 @@ jobs:
           INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
           INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
           INSTAGRAM_SESSION_ID: ${{ secrets.INSTAGRAM_SESSION_ID }}
-
         run: |
           poetry run python instagram.py
