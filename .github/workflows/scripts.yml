@@ -16,33 +16,8 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Cache Poetry
-        uses: actions/cache@v3
-        with:
-          path: ~/.local/share/pypoetry
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-
-
-      - name: Install Poetry
-        run: |
-          if ! command -v poetry &>/dev/null; then
-            curl -sSL https://install.python-poetry.org | python3 -
-          fi
-
-      - name: Verify Poetry Installation
-        run: poetry --version
-
-      - name: Configure Poetry to Use Project Directory
-        run: poetry config virtualenvs.in-project true
-
-      - name: Cache Virtual Environment
-        uses: actions/cache@v3
-        with:
-          path: .venv
-          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-venv-
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
 
       - name: Install Dependencies
         run: poetry install --no-root
