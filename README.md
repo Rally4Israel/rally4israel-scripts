@@ -22,3 +22,14 @@
 ### Cheerio
 
 - [Cheerio Github page](https://github.com/tani/cheeriogs)
+
+### Instagram
+
+Get a session ID:
+
+```python
+from instagrapi import Client
+client = Client()
+client.login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
+print(client.sessionid)
+```
