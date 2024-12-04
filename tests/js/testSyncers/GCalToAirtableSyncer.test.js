@@ -1,5 +1,5 @@
-const { GCalToAirtableSyncer } = require("../../syncers")
-const { MockCalendarAPI, MockAirtableAPI } = require("../../mockers")
+const { GCalToAirtableSyncer } = require("../../../syncers")
+const { MockCalendarAPI, MockAirtableAPI } = require("../../../mockers")
 
 function getAirtableEventsAPI(initialRecords = []) {
     return new MockAirtableAPI(initialRecords, ["GCalID"])

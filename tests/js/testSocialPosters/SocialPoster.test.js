@@ -1,5 +1,5 @@
-const { SocialPoster } = require("../../socialPosters")
-const { MockTwitterAPI, MockAirtableAPI, MockFacebookAPI } = require("../../mockers")
+const { SocialPoster } = require("../../../socialPosters")
+const { MockTwitterAPI, MockAirtableAPI, MockFacebookAPI } = require("../../../mockers")
 
 function getAirtableEventsAPI(initialRecords = []) {
     return new MockAirtableAPI(initialRecords, ["GCalID"])

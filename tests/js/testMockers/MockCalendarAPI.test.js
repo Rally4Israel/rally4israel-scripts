@@ -1,4 +1,4 @@
-const { MockCalendarAPI } = require("../../mockers")
+const { MockCalendarAPI } = require("../../../mockers")
 
 test('has no initial events by default', () => {
     const calendarAPI = new MockCalendarAPI()
