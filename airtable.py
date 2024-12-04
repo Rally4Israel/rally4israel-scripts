@@ -17,15 +17,15 @@ class AirtableRecordsFetcher:
         self.options = options
 
     def fetch(self):
-        return self.table.all(**self.options)
+        return self._table.all(**self.options)
 
     @cached_property
-    def api(self):
+    def _api(self):
         return AirtableAPI(AIRTABLE_API_KEY)
 
     @cached_property
-    def table(self):
-        return self.api.table(self.base_id, self.table_id)
+    def _table(self):
+        return self._api.table(self.base_id, self.table_id)
 
 
 class AirtableRecordsFilter:
@@ -37,17 +37,17 @@ class AirtableRecordsFilter:
 
     def filter(self):
         records = sorted(
-            filter(self.is_future_event, self.records),
-            key=self.sort_by_start_date,
+            filter(self._is_future_event, self.records),
+            key=self._sort_by_start_date,
         )
-        records = self.filter_out_recurring_events(records)
-        events_before_cutoff = self.get_events_before_cutoff(records, self.cutoff_days)
+        records = self._filter_out_recurring_events(records)
+        events_before_cutoff = self._get_events_before_cutoff(records, self.cutoff_days)
         if len(events_before_cutoff) >= self.min_events:
             return events_before_cutoff
         else:
             return records[: self.min_events + 1]
 
-    def get_events_before_cutoff(self, records, days):
+    def _get_events_before_cutoff(self, records, days):
         end_date = self.start_time + timedelta(days=days)
         return [
             record
@@ -55,16 +55,16 @@ class AirtableRecordsFilter:
             if datetime.fromisoformat(record["fields"]["Start"]) <= end_date
         ]
 
-    def is_future_event(self, record):
+    def _is_future_event(self, record):
         start = datetime.fromisoformat(record["fields"]["Start"])
         start_date_only = start.date()
         current_date_only = self.start_time.date()
         return start_date_only >= current_date_only
 
-    def sort_by_start_date(self, record):
+    def _sort_by_start_date(self, record):
         return datetime.fromisoformat(record["fields"]["Start"])
 
-    def filter_out_recurring_events(self, records):
+    def _filter_out_recurring_events(self, records):
         recurring_event_ids = set()
         filtered_records = []
         for record in records:
@@ -77,12 +77,11 @@ class AirtableRecordsFilter:
 
 
 if __name__ == "__main__":
-    records_fetcher = AirtableRecordsFetcher(
+    records = AirtableRecordsFetcher(
         AIRTABLE_API_KEY,
         AIRTABLE_BASE_ID,
         AIRTABLE_EVENTS_TABLE_ID,
         {"view": AIRTABLE_CALENDAR_VIEW_NAME},
-    )
-    records = records_fetcher.fetch()
+    ).fetch()
     filtered_records = AirtableRecordsFilter(records).filter()
     print(len(filtered_records))
