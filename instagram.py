@@ -1,11 +1,5 @@
-from dotenv import load_dotenv
-import os
+from settings import INSTAGRAM_PASSWORD, INSTAGRAM_SESSION_ID, INSTAGRAM_USERNAME
 
-load_dotenv()
-
-INSTAGRAM_USERNAME = os.getenv("INSTAGRAM_USERNAME")
-INSTAGRAM_PASSWORD = os.getenv("INSTAGRAM_PASSWORD")
-INSTAGRAM_SESSION_ID = os.getenv("INSTAGRAM_SESSION_ID")
 IMAGE_PATH = "img/testing.jpg"
 
 
