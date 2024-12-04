@@ -5,4 +5,7 @@ creds.json
 node_modules/
 secrets.js
 event_image.png
+event_image.jpg
 .env
+__pycache__/
+/__pycache__
