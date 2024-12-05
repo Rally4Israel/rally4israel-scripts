@@ -9,3 +9,4 @@ event_image.jpg
 .env
 __pycache__/
 /__pycache__
+.testmondata*
