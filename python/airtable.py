@@ -21,7 +21,7 @@ class AirtableRecordsFetcher:
 
     @cached_property
     def _api(self):
-        return AirtableAPI(AIRTABLE_API_KEY)
+        return AirtableAPI(self.api_key)
 
     @cached_property
     def _table(self):
