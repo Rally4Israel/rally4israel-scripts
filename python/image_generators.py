@@ -17,8 +17,9 @@ class EventImageGenerator:
     map_pin_icon = Image.open("img/icons/map-pin.png")
     padding = 50
 
-    def __init__(self, event):
+    def __init__(self, event, filename="event_image.png"):
         self.event = event
+        self.filename = filename
         self.width = self.height = 1080
         self.border_thickness = 15
         self.border_radius = 30
@@ -269,7 +270,7 @@ class EventImageGenerator:
                     )
 
         # Save the image
-        base.save("event_image.png")
+        base.save(self.filename)
 
         # Show the image
         base.show()
