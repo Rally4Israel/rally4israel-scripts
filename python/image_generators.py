@@ -1,6 +1,8 @@
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
 from dataclasses import dataclass
+import subprocess
+import platform
 
 
 @dataclass
@@ -17,7 +19,7 @@ class EventImageGenerator:
     map_pin_icon = Image.open("img/icons/map-pin.png")
     padding = 50
 
-    def __init__(self, event, filename="event_image.png"):
+    def __init__(self, event, filename="event_image.jpg"):
         self.event = event
         self.filename = filename
         self.width = self.height = 1080
@@ -39,7 +41,8 @@ class EventImageGenerator:
     def wrap_text(self, text, max_chars=40):
         return textwrap.wrap(text, width=max_chars)
 
-    def generate(self):
+    def generate(self, open_when_done=False):
+        self.open_when_done = open_when_done
         base = self.create_base_image()
         draw = ImageDraw.Draw(base)
 
@@ -273,7 +276,19 @@ class EventImageGenerator:
         base.save(self.filename)
 
         # Show the image
-        base.show()
+        if self.open_when_done:
+            self.open()
+
+    def open(self):
+        """
+        Open the saved image based on the OS
+        """
+        if platform.system() == "Darwin":  # macOS
+            subprocess.run(["open", self.filename])
+        elif platform.system() == "Windows":  # Windows
+            subprocess.run(["start", self.filename], shell=True)
+        else:  # Linux or other Unix-like systems
+            subprocess.run(["xdg-open", self.filename])
 
     def load_fonts(self):
         try:
@@ -299,4 +314,4 @@ event = Event(
     ),
 )
 
-EventImageGenerator(event).generate()
+EventImageGenerator(event).generate(open_when_done=True)
