@@ -28,7 +28,7 @@ class AirtableRecordsFetcher:
         return self._api.table(self.base_id, self.table_id)
 
 
-class AirtableRecordsFilter:
+class AirtableRecordsFilterer:
     def __init__(self, records, start_time=None, cutoff_days=10, min_events=10):
         self.records = records
         self.start_time = start_time or datetime.now(timezone.utc)
@@ -83,5 +83,5 @@ if __name__ == "__main__":
         AIRTABLE_EVENTS_TABLE_ID,
         {"view": AIRTABLE_CALENDAR_VIEW_NAME},
     ).fetch()
-    filtered_records = AirtableRecordsFilter(records).filter()
+    filtered_records = AirtableRecordsFilterer(records).filter()
     print(len(filtered_records))
