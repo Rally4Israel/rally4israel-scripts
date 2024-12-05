@@ -76,11 +76,11 @@ class AirtableRecordsFilterer:
         return filtered_records
 
 
-def get_filtered_calendar_records():
+def get_filtered_calendar_records(start_time=None):
     records = AirtableRecordsFetcher(
         AIRTABLE_API_KEY,
         AIRTABLE_BASE_ID,
         AIRTABLE_EVENTS_TABLE_ID,
         {"view": AIRTABLE_CALENDAR_VIEW_NAME},
     ).fetch()
-    return AirtableRecordsFilterer(records).filter()
+    return AirtableRecordsFilterer(records).filter(start_time=start_time)
