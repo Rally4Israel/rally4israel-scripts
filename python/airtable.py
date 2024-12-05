@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from functools import cached_property
-from settings import (
+from python.settings import (
     AIRTABLE_API_KEY,
     AIRTABLE_BASE_ID,
     AIRTABLE_CALENDAR_VIEW_NAME,

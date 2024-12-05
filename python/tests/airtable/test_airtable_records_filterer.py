@@ -1,5 +1,5 @@
 from freezegun import freeze_time
-from airtable import AirtableRecordsFilterer
+from python.airtable import AirtableRecordsFilterer
 
 
 def create_event(
