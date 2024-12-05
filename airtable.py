@@ -29,13 +29,13 @@ class AirtableRecordsFetcher:
 
 
 class AirtableRecordsFilterer:
-    def __init__(self, records, start_time=None, cutoff_days=10, min_events=10):
+    def __init__(self, records, cutoff_days=10, min_events=10):
         self.records = records
-        self.start_time = start_time or datetime.now(timezone.utc)
         self.cutoff_days = cutoff_days
         self.min_events = min_events
 
-    def filter(self):
+    def filter(self, start_time=None):
+        self.start_time = start_time or datetime.now(timezone.utc)
         records = sorted(
             filter(self._is_future_event, self.records),
             key=self._sort_by_start_date,
