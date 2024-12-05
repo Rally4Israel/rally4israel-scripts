@@ -1,16 +1,9 @@
+from datetime import date, time
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
-from dataclasses import dataclass
 import subprocess
 import platform
-
-
-@dataclass
-class Event:
-    name: str
-    date: str
-    time: str
-    location: str
+from events import Event
 
 
 class EventImageGenerator:
@@ -19,7 +12,7 @@ class EventImageGenerator:
     map_pin_icon = Image.open("img/icons/map-pin.png")
     padding = 50
 
-    def __init__(self, event, filename="event_image.jpg"):
+    def __init__(self, event: Event, filename="event_image.jpg"):
         self.event = event
         self.filename = filename
         self.width = self.height = 1080
@@ -27,6 +20,14 @@ class EventImageGenerator:
         self.border_radius = 30
         self.background_color = (0, 92, 144)  # Blue
         self.border_color = (0, 0, 0)  # Black
+
+    @property
+    def formatted_date(self):
+        return self.event.date.strftime("%A, %b %d")
+
+    @property
+    def formatted_start_time(self):
+        return self.event.start_time.strftime("%-I:%M %p").lower()
 
     def create_base_image(self):
         return Image.new(
@@ -129,7 +130,7 @@ class EventImageGenerator:
                 return y_position + text_height + 20
 
         # Wrap and draw the event name
-        event_lines = self.wrap_text(self.event.name)
+        event_lines = self.wrap_text(self.event.title)
         y_position = self.padding
 
         for line in event_lines:
@@ -138,7 +139,7 @@ class EventImageGenerator:
         # Draw the event date with calendar icon (only on the first line)
         y_position = draw_icon_and_text(
             self.calendar_icon,
-            self.event.date,
+            self.formatted_date,
             y_position,
             self.font_details,
             is_first_line=True,
@@ -147,7 +148,7 @@ class EventImageGenerator:
         # Draw the event time with clock icon (only on the first line)
         y_position = draw_icon_and_text(
             self.clock_icon,
-            self.event.time,
+            self.formatted_start_time,
             y_position,
             self.font_details,
             is_first_line=True,
@@ -235,14 +236,14 @@ class EventImageGenerator:
         # Redraw event date and time with icons
         y_position = draw_icon_and_text(
             self.calendar_icon,
-            self.event.date,
+            self.formatted_date,
             y_position,
             self.font_details,
             is_first_line=True,
         )
         y_position = draw_icon_and_text(
             self.clock_icon,
-            self.event.time,
+            self.formatted_start_time,
             y_position,
             self.font_details,
             is_first_line=True,
@@ -306,9 +307,9 @@ class EventImageGenerator:
 
 # Sample event details
 event = Event(
-    name="Chicago (DePaul): Stop the Hate: Rally for Jewish Students",
-    date="Thursday, Nov 21",
-    time="5:00 pm",
+    title="Chicago (DePaul): Stop the Hate: Rally for Jewish Students",
+    date=date(2024, 11, 21),
+    start_time=time(17, 0),
     location=(
         "DePaul University - Lincoln Park Student Center, 2250 N. Sheffield Ave."
     ),
