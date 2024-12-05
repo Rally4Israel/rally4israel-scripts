@@ -76,12 +76,11 @@ class AirtableRecordsFilterer:
         return filtered_records
 
 
-if __name__ == "__main__":
+def get_filtered_calendar_records():
     records = AirtableRecordsFetcher(
         AIRTABLE_API_KEY,
         AIRTABLE_BASE_ID,
         AIRTABLE_EVENTS_TABLE_ID,
         {"view": AIRTABLE_CALENDAR_VIEW_NAME},
     ).fetch()
-    filtered_records = AirtableRecordsFilterer(records).filter()
-    print(len(filtered_records))
+    return AirtableRecordsFilterer(records).filter()
