@@ -33,3 +33,9 @@ client = Client()
 client.login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
 print(client.sessionid)
 ```
+
+Run Script
+
+```bash
+poetry run python -m r4ilpy.image_generators
+```

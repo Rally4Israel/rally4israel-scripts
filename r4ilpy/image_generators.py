@@ -3,7 +3,8 @@ from PIL import Image, ImageDraw, ImageFont
 import textwrap
 import subprocess
 import platform
-from events import Event
+from r4ilpy.events import Event, airtable_record_to_event
+from r4ilpy.airtable import get_filtered_calendar_records
 
 
 class EventImageGenerator:
@@ -14,7 +15,7 @@ class EventImageGenerator:
 
     def __init__(self, event: Event, filename="event_image.jpg"):
         self.event = event
-        self.filename = filename
+        self.filename = f"img/instagram/{filename}"
         self.width = self.height = 1080
         self.border_thickness = 15
         self.border_radius = 30
@@ -305,14 +306,25 @@ class EventImageGenerator:
             self.font_event = self.font_details = ImageFont.load_default()
 
 
-# Sample event details
-event = Event(
-    title="Chicago (DePaul): Stop the Hate: Rally for Jewish Students",
-    date=date(2024, 11, 21),
-    start_time=time(17, 0),
-    location=(
-        "DePaul University - Lincoln Park Student Center, 2250 N. Sheffield Ave."
-    ),
-)
+def generate_test_image():
+    event = Event(
+        title="Chicago (DePaul): Stop the Hate: Rally for Jewish Students",
+        date=date(2024, 11, 21),
+        start_time=time(17, 0),
+        location=(
+            "DePaul University - Lincoln Park Student Center, 2250 N. Sheffield Ave."
+        ),
+    )
 
-EventImageGenerator(event).generate(open_when_done=True)
+    EventImageGenerator(event).generate(open_when_done=True)
+
+
+def generate_event_images():
+    for i, record in enumerate(get_filtered_calendar_records()):
+        event = airtable_record_to_event(record)
+        image_generator = EventImageGenerator(event, filename=f"event_image_{i}.jpg")
+        image_generator.generate(open_when_done=True)
+
+
+if __name__ == "__main__":
+    generate_event_images()

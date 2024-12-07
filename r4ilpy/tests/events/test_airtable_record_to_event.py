@@ -1,5 +1,5 @@
 from datetime import date, time
-from python.events import airtable_record_to_event
+from r4ilpy.events import airtable_record_to_event
 
 
 def test_copies_title_and_location():
