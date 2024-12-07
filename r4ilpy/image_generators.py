@@ -343,12 +343,12 @@ def generate_test_image():
     EventImageGenerator(event).generate(open_when_done=True)
 
 
-def generate_event_images():
+def generate_event_images(open_when_done=False):
     for i, record in enumerate(get_filtered_calendar_records()):
         event = airtable_record_to_event(record)
         image_generator = EventImageGenerator(event, filename=f"event_image_{i}.jpg")
-        image_generator.generate(open_when_done=True)
+        image_generator.generate(open_when_done=open_when_done)
 
 
 if __name__ == "__main__":
-    generate_event_images()
+    generate_event_images(open_when_done=True)
