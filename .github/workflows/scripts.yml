@@ -35,16 +35,13 @@ jobs:
         run: |
           if [ "${{ inputs.use_live_account }}" = "yes" ]; then
             echo "INSTAGRAM_SESSION_ID=${{ secrets.INSTAGRAM_SESSION_ID }}" >> $GITHUB_ENV
-            echo "INSTAGRAM_USERNAME=${{ secrets.INSTAGRAM_USERNAME }}" >> $GITHUB_ENV
           else
-            echo "INSTAGRAM_USERNAME=${{ secrets.TEST_INSTAGRAM_USERNAME }}" >> $GITHUB_ENV
+            echo "INSTAGRAM_SESSION_ID=${{ secrets.TEST_INSTAGRAM_SESSION_ID }}" >> $GITHUB_ENV
           fi
 
       - name: Run Instagram Script
         env:
           INSTAGRAM_SESSION_ID: ${{ env.INSTAGRAM_SESSION_ID }}
-          INSTAGRAM_USERNAME: ${{ env.INSTAGRAM_USERNAME }}
-          INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
           AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
           AIRTABLE_EVENTS_TABLE_ID: ${{ secrets.AIRTABLE_EVENTS_TABLE_ID }}
