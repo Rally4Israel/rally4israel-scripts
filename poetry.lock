@@ -232,6 +232,20 @@ files = [
 ]
 
 [[package]]
+name = "emoji"
+version = "2.11.0"
+description = "Emoji for Python"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
+files = [
+    {file = "emoji-2.11.0-py2.py3-none-any.whl", hash = "sha256:63fc9107f06c6c2e48e5078ce9575cef98518f5ac09474f6148a43e989989582"},
+    {file = "emoji-2.11.0.tar.gz", hash = "sha256:772eaa30f4e0b1ce95148a092df4c7dc97644532c03225326b0fd05e8a9f72a3"},
+]
+
+[package.extras]
+dev = ["coverage", "coveralls", "pytest"]
+
+[[package]]
 name = "freezegun"
 version = "1.5.1"
 description = "Let your Python tests travel through time"
@@ -399,6 +413,24 @@ mic = ["olefile"]
 tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "packaging", "pyroma", "pytest", "pytest-cov", "pytest-timeout"]
 typing = ["typing-extensions"]
 xmp = ["defusedxml"]
+
+[[package]]
+name = "pilmoji"
+version = "2.0.4"
+description = "Pilmoji is an emoji renderer for Pillow, Python's imaging library."
+optional = false
+python-versions = ">=3.8.0"
+files = [
+    {file = "pilmoji-2.0.4-py3-none-any.whl", hash = "sha256:2fcb2116226ed8aa600fcf6e65d7693b5d08d60715f8c460553130081a5adc26"},
+    {file = "pilmoji-2.0.4.tar.gz", hash = "sha256:3861c09999f36bb32dd559e181b63a8a9c8068b2cddcac32637581e48de2d11f"},
+]
+
+[package.dependencies]
+emoji = "*"
+Pillow = "*"
+
+[package.extras]
+requests = ["requests"]
 
 [[package]]
 name = "pluggy"
@@ -802,4 +834,4 @@ watchmedo = ["PyYAML (>=3.10)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "8e567f42a606b8639dacc2517a03dc827fa079b15d2b8081bee420912d4dbdbe"
+content-hash = "b0c09b4ebd88a3ab4bf62b284231452d3f490748d6cda7fcc35aac7ed2363e6f"

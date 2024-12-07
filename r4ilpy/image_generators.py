@@ -5,6 +5,8 @@ import subprocess
 import platform
 from r4ilpy.events import Event, airtable_record_to_event
 from r4ilpy.airtable import get_filtered_calendar_records
+from pilmoji import Pilmoji
+import emoji
 
 
 class EventImageGenerator:
@@ -64,71 +66,89 @@ class EventImageGenerator:
 
         self.load_fonts()
 
+        def extract_emojis(text):
+            return [char if char in emoji.EMOJI_DATA else char for char in text]
+
+        # Replace emojis with Twemoji PNGs
+        def draw_text_with_emojis(draw, text, position, font, emoji_size=32):
+            x, y = position
+            for char in extract_emojis(text):
+                if char in emoji.EMOJI_DATA:
+                    emoji_path = (
+                        f"twemoji/{ord(char):x}.png"  # Assuming Twemoji PNGs are stored
+                    )
+                    emoji_img = Image.open(emoji_path).resize((emoji_size, emoji_size))
+                    img.paste(emoji_img, (x, y))
+                    x += emoji_size
+                else:
+                    char_width, char_height = draw.textsize(char, font=font)
+                    draw.text((x, y), char, font=font, fill="black")
+                    x += char_width
+
         # Function to draw icons and corresponding text with proper alignment
         def draw_icon_and_text(icon, text, y_position, font, is_first_line=False):
-            if icon:
-                # Resize the icon to fit with the text
-                icon_resized = icon.resize((40, 40))
+            with Pilmoji(base) as pilmoji:
+                if icon:
+                    # Resize the icon to fit with the text
+                    icon_resized = icon.resize((40, 40))
 
-                # Get the bounding box of the text to calculate its height
-                text_bbox = draw.textbbox(
-                    (self.padding + 50, y_position), text, font=font
-                )
-                text_height = text_bbox[3] - text_bbox[1]  # Height of the text box
+                    # Get the bounding box of the text to calculate its height
+                    text_bbox = pilmoji.getsize(text, font=font)
+                    text_height = text_bbox[1]  # Height of the text box
 
-                # Calculate the total height that will be occupied by the icon and the text
-                total_height = max(icon_resized.height, text_height)
+                    # Calculate the total height that will be occupied by the icon and the text
+                    total_height = max(icon_resized.height, text_height)
 
-                # Calculate y-position adjustments so both the icon and text are vertically centered
-                icon_offset = (
-                    total_height - icon_resized.height
-                ) // 2  # Center the icon vertically
-                text_offset = (
-                    total_height - text_height
-                ) // 2  # Center the text vertically
+                    # Calculate y-position adjustments so both the icon and text are vertically centered
+                    icon_offset = (
+                        total_height - icon_resized.height
+                    ) // 2  # Center the icon vertically
+                    text_offset = (
+                        total_height - text_height
+                    ) // 2  # Center the text vertically
 
-                # Lower the icon position by a fixed amount (if necessary)
-                icon_offset += 10  # Move the icon down slightly for better alignment
+                    # Lower the icon position by a fixed amount (if necessary)
+                    icon_offset += (
+                        10  # Move the icon down slightly for better alignment
+                    )
 
-                # Place icon and text on the image (only draw the icon if it's the first line)
-                if is_first_line:
-                    base.paste(
-                        icon_resized,
-                        (self.padding, y_position + icon_offset),
-                        icon_resized,
-                    )  # Place icon
-                draw.text(
-                    (
-                        self.padding + (50 if is_first_line else 0),
-                        y_position + text_offset,
-                    ),
-                    text,
-                    font=font,
-                    fill="white",
-                )  # Place text
+                    # Place icon and text on the image (only draw the icon if it's the first line)
+                    if is_first_line:
+                        base.paste(
+                            icon_resized,
+                            (self.padding, y_position + icon_offset),
+                            icon_resized,
+                        )  # Place icon
+                    pilmoji.text(
+                        (
+                            self.padding + (50 if is_first_line else 0),
+                            y_position + text_offset,
+                        ),
+                        text,
+                        font=font,
+                        fill="white",
+                    )  # Place text
 
-                # Return the new y-position after drawing the icon and text
-                return (
-                    y_position + total_height + 20
-                )  # Add some space for the next section
-            else:
-                # Just draw text if there's no icon
-                text_bbox = draw.textbbox(
-                    (self.padding + 50, y_position), text, font=font
-                )
-                text_height = text_bbox[3] - text_bbox[1]
-                text_offset = text_height // 2
+                    # Return the new y-position after drawing the icon and text
+                    return (
+                        y_position + total_height + 20
+                    )  # Add some space for the next section
+                else:
+                    # Just draw text if there's no icon
+                    text_bbox = pilmoji.getsize(text, font=font)
+                    text_height = text_bbox[1]
+                    text_offset = text_height // 2
 
-                # Place the text on the image
-                draw.text(
-                    (self.padding + 50, y_position + text_offset),
-                    text,
-                    font=font,
-                    fill="white",
-                )
+                    # Place the text on the image
+                    pilmoji.text(
+                        (self.padding + 50, y_position + text_offset),
+                        text,
+                        font=font,
+                        fill="white",
+                    )
 
-                # Return the new y-position after drawing the text
-                return y_position + text_height + 20
+                    # Return the new y-position after drawing the text
+                    return y_position + text_height + 20
 
         # Wrap and draw the event name
         event_lines = self.wrap_text(self.event.title)
@@ -229,9 +249,10 @@ class EventImageGenerator:
 
         # Redraw event name
         for line in event_lines:
-            draw.text(
-                (self.padding, y_position), line, font=self.font_event, fill="white"
-            )
+            with Pilmoji(base) as pilmoji:
+                pilmoji.text(
+                    (self.padding, y_position), line, font=self.font_event, fill="white"
+                )
             y_position += 70  # Add some vertical space between lines
 
         # Redraw event date and time with icons
