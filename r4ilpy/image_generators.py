@@ -318,12 +318,14 @@ class EventImageGenerator:
 
     def load_fonts(self):
         try:
+            # Path to the fonts directory
+            font_dir = os.path.join(os.path.dirname(__file__), "../fonts")
             # Regular text font
             self.font_event = ImageFont.truetype(
-                "/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf", 50
+                os.path.join(font_dir, "NotoSans-Bold.ttf"), 50
             )
             self.font_details = ImageFont.truetype(
-                "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf", 45
+                os.path.join(font_dir, "NotoSans-Regular.ttf"), 45
             )
         except OSError:
             print("Font not found, using default font.")
