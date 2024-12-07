@@ -7,6 +7,7 @@ from r4ilpy.events import Event, airtable_record_to_event
 from r4ilpy.airtable import get_filtered_calendar_records
 from pilmoji import Pilmoji
 import emoji
+import os
 
 
 class EventImageGenerator:
@@ -295,6 +296,8 @@ class EventImageGenerator:
                         None, line, y_position, self.font_details, is_first_line=False
                     )
 
+        # Ensure the directory for the image exists
+        os.makedirs(os.path.dirname(self.filename), exist_ok=True)
         # Save the image
         base.save(self.filename)
 
