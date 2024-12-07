@@ -1,7 +1,16 @@
-name: Run Scripts
+name: Instagram Script
 
 on:
-  workflow_dispatch: # Allows manual trigger
+  workflow_dispatch:
+    inputs:
+      use_live_account:
+        description: "Post to the live Rally4Israel Instagram account?"
+        required: true
+        type: choice
+        options:
+          - yes
+          - no
+        default: "no"
 
 jobs:
   run-script:
@@ -22,11 +31,19 @@ jobs:
       - name: Install Dependencies
         run: poetry install --no-root
 
+      - name: Set Environment Variables
+        run: |
+          if [ "${{ inputs.use_live_account }}" = "yes" ]; then
+            echo "INSTAGRAM_SESSION_ID=${{ secrets.INSTAGRAM_SESSION_ID }}" >> $GITHUB_ENV
+            echo "INSTAGRAM_USERNAME=${{ secrets.INSTAGRAM_USERNAME }}" >> $GITHUB_ENV
+          else
+            echo "INSTAGRAM_USERNAME=${{ secrets.TEST_INSTAGRAM_USERNAME }}" >> $GITHUB_ENV
+          fi
+
       - name: Run Instagram Script
         env:
-          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_SESSION_ID: ${{ env.INSTAGRAM_SESSION_ID }}
+          INSTAGRAM_USERNAME: ${{ env.INSTAGRAM_USERNAME }}
           INSTAGRAM_PASSWORD: ${{ secrets.INSTAGRAM_PASSWORD }}
-          INSTAGRAM_USERNAME: ${{ secrets.INSTAGRAM_USERNAME }}
-          INSTAGRAM_SESSION_ID: ${{ secrets.INSTAGRAM_SESSION_ID }}
         run: |
-          poetry run python instagram.py
+          poetry run python -m r4ilpy.instagram
