@@ -8,8 +8,8 @@ on:
         required: true
         type: choice
         options:
-          - yes
-          - no
+          - "yes"
+          - "no"
         default: "no"
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
 
       - name: Set Environment Variables
         run: |
-          if [ "${{ inputs.use_live_account }}" = "yes" ]; then
+          if [ "${{ github.event.inputs.use_live_account }}" == "yes" ]; then
             echo "INSTAGRAM_SESSION_ID=${{ secrets.INSTAGRAM_SESSION_ID }}" >> $GITHUB_ENV
           else
             echo "INSTAGRAM_SESSION_ID=${{ secrets.TEST_INSTAGRAM_SESSION_ID }}" >> $GITHUB_ENV
