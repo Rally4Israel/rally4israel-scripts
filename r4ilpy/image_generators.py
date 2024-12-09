@@ -97,8 +97,8 @@ class EventImageGenerator:
         overlay_draw = ImageDraw.Draw(overlay)
 
         # Define top message content
-        header_font_small = ImageFont.truetype("NotoSans-Bold.ttf", 40)
-        header_font_large = ImageFont.truetype("NotoSans-Bold.ttf", 70)
+        header_font_small = ImageFont.truetype("NotoSans-Bold.ttf", 30)
+        header_font_large = ImageFont.truetype("NotoSans-Bold.ttf", 50)
         header_lines = [
             ("Rally 4 Israel", header_font_small),
             ("Wednesday Rally Roundup", header_font_large),
