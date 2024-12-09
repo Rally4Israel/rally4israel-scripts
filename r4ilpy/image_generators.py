@@ -20,6 +20,7 @@ class EventImageGenerator:
         self.border_radius = 30
         self.background_color = (0, 92, 144)  # Blue
         self.border_color = (0, 0, 0)  # Black
+        self.header_footer_background = (232, 232, 232, 200)
 
     @property
     def formatted_date(self):
@@ -118,7 +119,7 @@ class EventImageGenerator:
         rect_y1 = self.padding
         rect_x2 = rect_x1 + rect_width
         rect_y2 = rect_y1 + rect_height
-        rect_color = (232, 232, 232, 200)  # Light gray with transparency
+        rect_color = self.header_footer_background
         overlay_draw.rounded_rectangle(
             [(rect_x1, rect_y1), (rect_x2, rect_y2)],
             radius=20,
@@ -186,7 +187,7 @@ class EventImageGenerator:
         rect_y1 = y_position - rect_padding + 5
         rect_x2 = x_position + total_width + rect_padding
         rect_y2 = y_position + text_height + rect_padding
-        rect_color = (232, 232, 232, 200)  # Light gray with some transparency
+        rect_color = self.header_footer_background
         # Create a temporary overlay for semi-transparency
         overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
         overlay_draw = ImageDraw.Draw(overlay)
