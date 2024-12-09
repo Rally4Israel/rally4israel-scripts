@@ -179,7 +179,7 @@ class EventImageGenerator:
         # Calculate positions for bottom message
         total_width = logo_size + 10 + text_width  # Logo + spacing + text
         x_position = (base.width - total_width) // 2  # Center the group (logo + text)
-        y_position = self.height - self.padding - text_height - 20  # Adjust padding
+        y_position = self.height - self.padding - text_height + 10  # Adjust padding
         # Define rounded rectangle properties
         rect_padding = 20
         rect_x1 = x_position - rect_padding
