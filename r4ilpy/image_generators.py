@@ -97,12 +97,11 @@ class EventImageGenerator:
         overlay_draw = ImageDraw.Draw(overlay)
 
         # Define top message content
-        header_font_small = ImageFont.truetype("NotoSans-Bold.ttf", 30)
-        header_font_large = ImageFont.truetype("NotoSans-Bold.ttf", 50)
+        header_font_large = self.font_event
+        header_font_small = self.font_details
         header_lines = [
-            ("Rally 4 Israel", header_font_small),
-            ("Wednesday Rally Roundup", header_font_large),
-            ("Dec 11, 2024", header_font_small),
+            ("Rally4Israel Rally Roundup", header_font_large),
+            ("Wednesday, Dec 11, 2024", header_font_small),
         ]
 
         # Calculate header dimensions
@@ -168,8 +167,7 @@ class EventImageGenerator:
 
         """Draw a bottom message with the Instagram logo."""
         message = "Follow @rally4israel for more updates"
-        font_size = 40
-        font = ImageFont.truetype("NotoSans-Regular.ttf", font_size)
+        font = self.font_details
         # Load Instagram logo
         logo_size = 50
         logo_path = "img/icons/instagram_logo.png"
