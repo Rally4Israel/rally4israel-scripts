@@ -115,7 +115,7 @@ class EventImageGenerator:
         rect_height = total_header_height + 2 * rect_padding
 
         # Draw rounded rectangle for the top message
-        rect_x1 = (self.width - rect_width) // 2
+        rect_x1 = (base.width - rect_width) // 2
         rect_y1 = self.padding
         rect_x2 = rect_x1 + rect_width
         rect_y2 = rect_y1 + rect_height
@@ -178,8 +178,9 @@ class EventImageGenerator:
         )
         # Calculate positions
         text_width, text_height = self.get_font_size(font, message)
+        # Calculate positions for bottom message
         total_width = logo_size + 10 + text_width  # Logo + spacing + text
-        x_position = (self.width - total_width) // 2
+        x_position = (base.width - total_width) // 2  # Center the group (logo + text)
         y_position = self.height - self.padding - text_height - 20  # Adjust padding
         # Define rounded rectangle properties
         rect_padding = 20
