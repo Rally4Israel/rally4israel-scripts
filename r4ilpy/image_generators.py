@@ -118,6 +118,46 @@ class EventImageGenerator:
                 self.font_details,
             )
 
+        """Draw a bottom message with the Instagram logo."""
+        message = "Follow @rally4israel for more updates"
+        font_size = 40
+        font = ImageFont.truetype("NotoSans-Regular.ttf", font_size)
+        # Load Instagram logo
+        logo_size = 50
+        logo_path = "img/icons/instagram_logo.png"
+        instagram_logo = (
+            Image.open(logo_path).resize((logo_size, logo_size)).convert("RGBA")
+        )
+        # Calculate positions
+        text_width, text_height = self.get_font_size(font, message)
+        total_width = logo_size + 10 + text_width  # Logo + spacing + text
+        x_position = (self.width - total_width) // 2
+        y_position = self.height - self.padding - text_height - 20  # Adjust padding
+        # Define rounded rectangle properties
+        rect_padding = 20
+        rect_x1 = x_position - rect_padding
+        rect_y1 = y_position - rect_padding + 5
+        rect_x2 = x_position + total_width + rect_padding
+        rect_y2 = y_position + text_height + rect_padding
+        rect_color = (232, 232, 232, 200)  # Light gray with some transparency
+        # Create a temporary overlay for semi-transparency
+        overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
+        overlay_draw = ImageDraw.Draw(overlay)
+        overlay_draw.rounded_rectangle(
+            [(rect_x1, rect_y1), (rect_x2, rect_y2)],
+            radius=15,
+            fill=rect_color,
+        )
+        base = Image.alpha_composite(base.convert("RGBA"), overlay)
+        # Paste Instagram logo
+        base.paste(instagram_logo, (x_position, y_position), mask=instagram_logo)
+        # Draw text next to the logo
+        draw = ImageDraw.Draw(base)
+        text_x = x_position + logo_size + 10  # Position text after the logo
+        draw.text((text_x, y_position), message, font=font, fill="black")
+        # Convert the final image to RGB mode (to save as JPEG)
+        base = base.convert("RGB")
+
         # Save image
         os.makedirs(os.path.dirname(self.filename), exist_ok=True)
         base.save(self.filename)
