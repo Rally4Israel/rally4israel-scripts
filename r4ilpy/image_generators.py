@@ -92,9 +92,57 @@ class EventImageGenerator:
 
         self.load_fonts()
 
-        # Prepare content
-        title_lines = self.wrap_text(self.event.title, max_chars=36)
-        y_position = 300
+        # Prepare an overlay for transparency
+        overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
+        overlay_draw = ImageDraw.Draw(overlay)
+
+        # Define top message content
+        header_font_small = ImageFont.truetype("NotoSans-Bold.ttf", 40)
+        header_font_large = ImageFont.truetype("NotoSans-Bold.ttf", 70)
+        header_lines = [
+            ("Rally 4 Israel", header_font_small),
+            ("Wednesday Rally Roundup", header_font_large),
+            ("Dec 11, 2024", header_font_small),
+        ]
+
+        # Calculate header dimensions
+        line_heights = [
+            self.get_font_size(font, text)[1] for text, font in header_lines
+        ]
+        total_header_height = sum(line_heights) + (len(header_lines) - 1) * 10
+        rect_padding = 20
+        rect_width = self.width - 2 * self.padding
+        rect_height = total_header_height + 2 * rect_padding
+
+        # Draw rounded rectangle for the top message
+        rect_x1 = (self.width - rect_width) // 2
+        rect_y1 = self.padding
+        rect_x2 = rect_x1 + rect_width
+        rect_y2 = rect_y1 + rect_height
+        rect_color = (232, 232, 232, 200)  # Light gray with transparency
+        overlay_draw.rounded_rectangle(
+            [(rect_x1, rect_y1), (rect_x2, rect_y2)],
+            radius=20,
+            fill=rect_color,
+        )
+
+        # Composite the overlay onto the base image
+        base = Image.alpha_composite(base.convert("RGBA"), overlay)
+
+        # Add text to the top message
+        draw = ImageDraw.Draw(
+            base
+        )  # Reinitialize the draw object for the updated image
+        y_offset = rect_y1 + rect_padding
+        for text, font in header_lines:
+            text_width, text_height = self.get_font_size(font, text)
+            x_position = (self.width - text_width) // 2  # Center text
+            draw.text((x_position, y_offset), text, font=font, fill="black")
+            y_offset += text_height + 10
+
+            # Prepare content
+            title_lines = self.wrap_text(self.event.title, max_chars=36)
+            y_position = 300
 
         # Draw content
         with Pilmoji(base) as pilmoji:
