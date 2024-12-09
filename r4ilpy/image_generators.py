@@ -141,7 +141,7 @@ class EventImageGenerator:
 
             # Prepare content
             title_lines = self.wrap_text(self.event.title, max_chars=36)
-        y_position = 270
+        y_position = 250
 
         # Draw content
         with Pilmoji(base) as pilmoji:
