@@ -1,4 +1,4 @@
-from datetime import date, time, datetime
+from datetime import date, time
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
 import subprocess
@@ -6,7 +6,6 @@ import platform
 from r4ilpy.events import Event, airtable_record_to_event
 from r4ilpy.airtable import get_filtered_calendar_records
 from pilmoji import Pilmoji
-import emoji
 import os
 
 
