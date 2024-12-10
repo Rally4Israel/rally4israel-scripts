@@ -3,6 +3,7 @@ from PIL import Image, ImageDraw, ImageFont
 import textwrap
 import subprocess
 import platform
+from r4ilpy.emoji_sources import TwemojiEmojiSource
 from r4ilpy.events import Event, airtable_record_to_event
 from r4ilpy.airtable import get_filtered_calendar_records
 from pilmoji import Pilmoji
@@ -143,7 +144,7 @@ class IntroImageGenerator:
             ("🔗", "Full calendar at rally4israel.com/calendar (link in bio)"),
             ("👉", "Send us your rally info to get featured!"),
         ]
-        with Pilmoji(base) as pilmoji:
+        with Pilmoji(base, source=TwemojiEmojiSource) as pilmoji:
             y_position += 30
             for emoji, text in descriptive_texts:
                 y_position = self.draw_icon_and_text(
@@ -362,7 +363,7 @@ class EventImageGenerator:
         y_position = 250
 
         # Draw content
-        with Pilmoji(base) as pilmoji:
+        with Pilmoji(base, source=TwemojiEmojiSource) as pilmoji:
             for line in title_lines:
                 pilmoji.text(
                     (self.padding, y_position), line, font=self.font_event, fill="white"
