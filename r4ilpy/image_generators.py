@@ -127,7 +127,7 @@ class IntroImageGenerator:
         y_offset = rect_y1 + rect_padding
         for text, font in header_lines:
             text_width, text_height = self.get_font_size(font, text)
-            x_position = (self.width - text_width) // 2  # Center text
+            x_position = rect_x1 + (rect_width - text_width) // 2
             draw.text((x_position, y_offset), text, font=font, fill="black")
             y_offset += text_height + 10
 
