@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import date, datetime, time
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
 import subprocess
@@ -73,7 +73,8 @@ class EventImageGenerator:
             y_position += line_height
         return y_position
 
-    def generate(self, open_when_done=False):
+    def generate(self, open_when_done=False, post_time=None):
+        self.post_time = post_time or datetime.now()
         base = self.create_base_image()
         draw = ImageDraw.Draw(base)
 
@@ -100,9 +101,10 @@ class EventImageGenerator:
         # Define top message content
         header_font_large = self.font_event
         header_font_small = self.font_details
+        formatted_post_time = self.post_time.strftime("%A, %b %d, %Y")
         header_lines = [
             ("Rally4Israel Rally Roundup", header_font_large),
-            ("Wednesday, Dec 11, 2024", header_font_small),
+            (formatted_post_time, header_font_small),
         ]
 
         # Calculate header dimensions
