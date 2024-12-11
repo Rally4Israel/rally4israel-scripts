@@ -32,7 +32,7 @@ describe('Creating new event', () => {
             airtableEventsAPI,
             airtableUsersAPI
         )
-        sycner.sync()
+        sycner.sync(new Date(2015, 0, 1), new Date(2016, 0, 1))
         return { airtableEventsAPI, airtableUsersAPI }
     }
     test('Syncs event to airtable', () => {
@@ -81,20 +81,20 @@ describe('Creating new event', () => {
             creator: { email: "user@email.om" },
             start: {
                 timeZone: 'Pacific/Pitcairn',
-                dateTime: '2024-10-15T04:45:00+03:00'
+                dateTime: '2015-10-15T04:45:00+03:00'
             },
             iCalUID: '7ri4a4ppklpfehfh3i80av3k1g@google.com',
             end: {
                 timeZone: 'Pacific/Pitcairn',
-                dateTime: '2024-10-15T05:45:00+03:00'
+                dateTime: '2015-10-15T05:45:00+03:00'
             },
             id: '7ri4a4ppklpfehfh3i80av3k1g',
         }
         const { airtableEventsAPI } = createEvent([sourceEvent])
 
         const airtableEventFields = airtableEventsAPI.getAllRecords()[0].fields
-        expect(airtableEventFields.Start).toStrictEqual("2024-10-14T17:45:00.000Z")
-        expect(airtableEventFields.End).toStrictEqual("2024-10-14T18:45:00.000Z")
+        expect(airtableEventFields.Start).toStrictEqual("2015-10-14T17:45:00.000Z")
+        expect(airtableEventFields.End).toStrictEqual("2015-10-14T18:45:00.000Z")
     })
 })
 
@@ -135,7 +135,7 @@ describe('Updating old event', () => {
             airtableEventsAPI,
             airtableUsersAPI
         )
-        sycner.sync()
+        sycner.sync(new Date(2015, 0, 1), new Date(2016, 0, 1))
 
         let airtableEvent = airtableEventsAPI.getAllRecords()[0]
         expect(airtableEvent.fields.Creator).toStrictEqual(["new-user-id"])
@@ -146,29 +146,35 @@ describe('Updating old event', () => {
 
 describe('Deleting events', () => {
     test('Deletes Airtable records if GCal Event is deleted', () => {
-        let sourceGCalAPI = new MockCalendarAPI([
-            {
-                id: "2",
-                creator: { email: "user@email.com" },
-                summary: "Test Event",
-                start: { date: '2015-05-28' },
-                end: { date: '2015-05-28' },
-            }
-        ])
+        let sourceGCalAPI = new MockCalendarAPI([])
         let airtableEventsAPI = getAirtableEventsAPI([
-            { id: "1", fields: { GCalID: "1" } },
-            { id: "2", fields: { GCalID: "2" } },
-            { id: "3", fields: { GCalID: "3" } },
+            { id: "1", fields: { GCalID: "1", Start: '2015-06-31T22:00:00.000Z' } },
         ])
         let sycner = new GCalToAirtableSyncer(
             [sourceGCalAPI],
             airtableEventsAPI,
             getAirtableUsersAPI()
         )
-        sycner.sync()
+        sycner.sync(new Date(2015, 0, 1), new Date(2016, 0, 1))
+
+        let airtableEvents = airtableEventsAPI.getAllRecords()
+        expect(airtableEvents.length).toStrictEqual(0)
+    })
+
+    test('Does not delete events before syncFromTime', () => {
+        let sourceGCalAPI = new MockCalendarAPI([])
+        let airtableEventsAPI = getAirtableEventsAPI([
+            { id: "1", fields: { GCalID: "1", Start: '2014-12-30T22:00:00.000Z' } },
+        ])
+        let sycner = new GCalToAirtableSyncer(
+            [sourceGCalAPI],
+            airtableEventsAPI,
+            getAirtableUsersAPI()
+        )
+        sycner.sync(new Date(2015, 0, 1), new Date(2016, 0, 1))
 
         let airtableEvents = airtableEventsAPI.getAllRecords()
         expect(airtableEvents.length).toStrictEqual(1)
-        expect(airtableEvents[0].fields.GCalID).toStrictEqual("2")
+        expect(airtableEvents[0].fields.GCalID).toStrictEqual("1")
     })
 })

@@ -5,18 +5,22 @@ class GCalToAirtableSyncer {
         this.airtableUsersAPI = airtableUsersAPI
     }
 
-    sync() {
-        let eventsForAirtable = this.getAllSourceEvents()
-            .map(event => this.prepEventForAirtable(event))
+    sync(syncFromTime, syncToTime) {
+        const now = new Date();
+        syncFromTime = syncFromTime || new Date(now.getFullYear(), now.getMonth() - 2, 1); // Default: 2 months ago
+        syncToTime = syncToTime || new Date(now.getFullYear(), now.getMonth() + 10, 1); // Default: 10 months in the future
+
+        const sourceEvents = this.getAllSourceEvents(syncFromTime, syncToTime)
+        const eventsForAirtable = sourceEvents.map(event => this.prepEventForAirtable(event))
         this.airtableEventsAPI.upsertRecords(eventsForAirtable)
-        this.deleteOldEvents()
+        this.deleteOldEvents(sourceEvents, syncFromTime)
     }
 
-    getAllSourceEvents() {
+    getAllSourceEvents(syncFromTime, syncToTime) {
         let events = []
         this.sourceCalendars.forEach(calendar => {
-            events = events.concat(calendar.getAllEvents())
-        })
+            events = events.concat(calendar.getEventsInRange(syncFromTime.toISOString(), syncToTime.toISOString()))
+        });
         return events
     }
 
@@ -93,11 +97,15 @@ class GCalToAirtableSyncer {
         )).toISOString();
     }
 
-    deleteOldEvents() {
+    deleteOldEvents(sourceEvents, syncFromTime) {
         let airtableEvents = this.airtableEventsAPI.getAllRecords()
-        let gCalEventIds = this.getAllSourceEvents().map(event => event.id)
+        let gCalEventIds = sourceEvents.map(event => event.id)
         let airtableEventsToDelete = airtableEvents
-            .filter(event => !gCalEventIds.includes(event.fields.GCalID))
+            .filter(event => {
+                const isAfterSyncFrom = new Date(event.fields.Start) >= syncFromTime
+                const isInSourceEvents = gCalEventIds.includes(event.fields.GCalID)
+                return !isInSourceEvents && isAfterSyncFrom
+            })
             .map(event => event.id)
         return this.airtableEventsAPI.deleteRecords(airtableEventsToDelete)
     }

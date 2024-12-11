@@ -85,6 +85,16 @@ class MockCalendarAPI {
     getEventById(eventId) {
         return this.events[eventId]
     }
+
+    getEventsInRange(fromDate, toDate) {
+        const from = new Date(fromDate);
+        const to = new Date(toDate);
+
+        return this.getAllEvents().filter(event => {
+            const start = new Date(event.start.date || event.start.dateTime);
+            return start >= from && start < to;
+        });
+    }
 }
 
 class MockAirtableAPI {

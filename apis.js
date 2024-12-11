@@ -180,6 +180,28 @@ class GCalAPI {
         return events;
     }
 
+    getEventsInRange(fromDate, toDate) {
+        let events = [];
+        let pageToken;
+
+        do {
+            let response = Calendar.Events.list(this.calendarId, {
+                pageToken: pageToken,
+                maxResults: 2500,
+                showDeleted: false,
+                singleEvents: true,
+                timeMin: fromDate,
+                timeMax: toDate
+            });
+            if (response.items && response.items.length > 0) {
+                events = events.concat(response.items);
+            }
+            pageToken = response.nextPageToken;
+        } while (pageToken);
+
+        return events;
+    }
+
     createEvent(eventData) {
         try {
             let createdEvent = Calendar.Events.insert(eventData, this.calendarId);

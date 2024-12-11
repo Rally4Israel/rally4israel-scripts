@@ -79,3 +79,21 @@ test('getEventById gets an event by id', () => {
     let event = calendarAPI.getEventById(1)
     expect(event.id).toStrictEqual(1)
 })
+
+test('getEventsInRange Filters events based on a date range', () => {
+    const mockAPI = new MockCalendarAPI([
+        { id: "1", start: { date: '2023-12-01' }, end: { date: '2023-12-02' } },
+        { id: "2", start: { date: '2024-06-01' }, end: { date: '2024-06-02' } },
+        { id: "3", start: { date: '2025-01-01' }, end: { date: '2025-01-02' } },
+    ]);
+
+    const fromDate = '2024-01-01T00:00:00.000Z';
+    const toDate = '2024-12-31T23:59:59.999Z';
+
+    const filteredEvents = mockAPI.getEventsInRange(fromDate, toDate);
+    const eventIDs = filteredEvents.map(event => event.id);
+
+    expect(eventIDs).toContain("2");
+    expect(eventIDs).not.toContain("1");
+    expect(eventIDs).not.toContain("3");
+});
