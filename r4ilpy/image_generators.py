@@ -420,7 +420,7 @@ class EventImageGenerator:
         # Draw text next to the logo
         draw = ImageDraw.Draw(base)
         text_x = x_position + logo_size + 10  # Position text after the logo
-        draw.text((text_x, y_position), message, font=font, fill="black")
+        draw.text((text_x, y_position - 7), message, font=font, fill="black")
         # Convert the final image to RGB mode (to save as JPEG)
         base = base.convert("RGB")
 
