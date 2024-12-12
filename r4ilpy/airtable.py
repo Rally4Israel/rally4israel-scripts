@@ -9,14 +9,14 @@ from r4ilpy.settings import (
 from pyairtable import Api as AirtableAPI
 
 
-class AirtableRecordsFetcher:
+class AirtableConnector:
     def __init__(self, api_key, base_id, table_id, options) -> None:
         self.api_key = api_key
         self.base_id = base_id
         self.table_id = table_id
         self.options = options
 
-    def fetch(self):
+    def fetchall(self):
         return self._table.all(**self.options)
 
     @cached_property
@@ -77,10 +77,10 @@ class AirtableRecordsFilterer:
 
 
 def get_filtered_calendar_records(start_time=None):
-    records = AirtableRecordsFetcher(
+    records = AirtableConnector(
         AIRTABLE_API_KEY,
         AIRTABLE_BASE_ID,
         AIRTABLE_EVENTS_TABLE_ID,
         {"view": AIRTABLE_CALENDAR_VIEW_NAME},
-    ).fetch()
+    ).fetchall()
     return AirtableRecordsFilterer(records).filter(start_time=start_time)

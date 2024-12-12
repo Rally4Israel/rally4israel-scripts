@@ -1,3 +1,4 @@
+from r4ilpy.airtable import AirtableRecordsFetcher
 from r4ilpy.image_generators import generate_event_images
 from r4ilpy.settings import INSTAGRAM_PASSWORD, INSTAGRAM_SESSION_ID, INSTAGRAM_USERNAME
 from instagrapi import Client
@@ -12,6 +13,22 @@ class InstagramClient(Client):
             self.login_by_sessionid(INSTAGRAM_SESSION_ID)
         else:
             return super().login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
+
+
+class InstagramPoster:
+    instagram_client_class = InstagramClient
+    airtable_conn_class = AirtableRecordsFetcher
+
+    @property
+    def instagram_client(self):
+        return self.instagram_client_class()
+
+    @property
+    def airtable_conn(self):
+        return self.airtable_conn_class()
+
+    def post(self):
+        pass
 
 
 def main():
