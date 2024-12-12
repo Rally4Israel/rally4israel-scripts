@@ -6,12 +6,17 @@ import os
 IMAGE_PATH = "img/testing.jpg"
 
 
+class InstagramClient(Client):
+    def login(self) -> bool:
+        if INSTAGRAM_SESSION_ID:
+            self.login_by_sessionid(INSTAGRAM_SESSION_ID)
+        else:
+            return super().login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
+
+
 def main():
-    client = Client()
-    if INSTAGRAM_SESSION_ID:
-        client.login_by_sessionid(INSTAGRAM_SESSION_ID)
-    else:
-        client.login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
+    client = InstagramClient()
+    client.login()
     # collaborators_usernames = ["elizabeth.rand.311", "herutnyc"]
     collaborators_usernames = ["ari.abramowitz1"]
     collaborator_ids = [
@@ -48,18 +53,15 @@ def generate_post():
     generate_event_images()
 
     # Get all image paths from img/instagram
-    image_paths = get_image_paths(IMAGE_DIR)
+    image_paths = get_image_paths("img/instagram/batches/1")
 
     if not image_paths:
         print("No images found in the directory.")
         return
 
     # Instagram login setup
-    client = Client()
-    if INSTAGRAM_SESSION_ID:
-        client.login_by_sessionid(INSTAGRAM_SESSION_ID)
-    else:
-        client.login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
+    client = InstagramClient()
+    client.login()
 
     # Collaborator usernames and user IDs
     collaborators_usernames = ["ari.abramowitz1"]
