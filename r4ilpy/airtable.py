@@ -10,11 +10,10 @@ from pyairtable import Api as AirtableAPI
 
 
 class AirtableConnector:
-    def __init__(self, api_key, base_id, table_id, options) -> None:
-        self.api_key = api_key
-        self.base_id = base_id
-        self.table_id = table_id
-        self.options = options
+    api_key: str
+    base_id: str
+    table_id: str
+    options: dict[str | str]
 
     def fetchall(self):
         return self._table.all(**self.options)
@@ -26,6 +25,13 @@ class AirtableConnector:
     @cached_property
     def _table(self):
         return self._api.table(self.base_id, self.table_id)
+
+
+class AirtableCalendarViewConnector(AirtableConnector):
+    api_key: str = AIRTABLE_API_KEY
+    base_id: str = AIRTABLE_BASE_ID
+    table_id: str = AIRTABLE_EVENTS_TABLE_ID
+    options: dict[str | str] = {"view": AIRTABLE_CALENDAR_VIEW_NAME}
 
 
 class AirtableRecordsFilterer:
@@ -77,10 +83,5 @@ class AirtableRecordsFilterer:
 
 
 def get_filtered_calendar_records(start_time=None):
-    records = AirtableConnector(
-        AIRTABLE_API_KEY,
-        AIRTABLE_BASE_ID,
-        AIRTABLE_EVENTS_TABLE_ID,
-        {"view": AIRTABLE_CALENDAR_VIEW_NAME},
-    ).fetchall()
+    records = AirtableCalendarViewConnector().fetchall()
     return AirtableRecordsFilterer(records).filter(start_time=start_time)

@@ -1,4 +1,4 @@
-from r4ilpy.airtable import AirtableRecordsFetcher
+from r4ilpy.airtable import AirtableCalendarViewConnector
 from r4ilpy.image_generators import generate_event_images
 from r4ilpy.settings import INSTAGRAM_PASSWORD, INSTAGRAM_SESSION_ID, INSTAGRAM_USERNAME
 from instagrapi import Client
@@ -17,7 +17,7 @@ class InstagramClient(Client):
 
 class InstagramPoster:
     instagram_client_class = InstagramClient
-    airtable_conn_class = AirtableRecordsFetcher
+    airtable_conn_class = AirtableCalendarViewConnector
 
     @property
     def instagram_client(self):
