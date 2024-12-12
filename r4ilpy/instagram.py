@@ -8,8 +8,6 @@ IMAGE_PATH = "img/testing.jpg"
 
 def main():
     client = Client()
-    print(len(INSTAGRAM_USERNAME))
-    print(len(INSTAGRAM_PASSWORD))
     if INSTAGRAM_SESSION_ID:
         client.login_by_sessionid(INSTAGRAM_SESSION_ID)
     else:
