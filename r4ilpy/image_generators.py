@@ -12,17 +12,17 @@ import os
 
 class IntroImageGenerator:
     padding = 60
+    base_path = "img/instagram/"
 
     def __init__(
         self,
-        path="img/instagram/",
         filename="intro_image.jpg",
         batch_no=1,
         total_batches=1,
     ):
         self.batch_no = batch_no
         self.total_batches = total_batches
-        self.filename = f"{path}batches/{self.batch_no}/{filename}"
+        self.filename = f"{self.base_path}batches/{self.batch_no}/{filename}"
         self.width = self.height = 1080
         self.border_thickness = 15
         self.border_radius = 30
@@ -235,17 +235,17 @@ class IntroImageGenerator:
 
 class EventImageGenerator:
     padding = 60
+    base_path = "img/instagram/"
 
     def __init__(
         self,
         event: Event,
-        path="img/instagram/",
         filename="event_image.jpg",
         batch_no=1,
     ):
         self.event = event
         self.batch_no = batch_no
-        self.filename = f"{path}batches/{self.batch_no}/{filename}"
+        self.filename = f"{self.base_path}batches/{self.batch_no}/{filename}"
         self.width = self.height = 1080
         self.border_thickness = 15
         self.border_radius = 30
