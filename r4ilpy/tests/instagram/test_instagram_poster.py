@@ -14,7 +14,7 @@ def get_test_poster(tmp_path):
                 pass
 
             def album_upload(self, *args, **kwargs):
-                self.album_uploads.append((args, kwargs))
+                self.album_uploads.append({"args": args, "kwargs": kwargs})
 
         class FakeAirtableConnector:
             def fetchall(self):
@@ -63,3 +63,21 @@ def test_uploads_album(get_test_poster):
     poster = get_test_poster([get_test_airtable_record(event_date="2024-01-02")])
     poster.post()
     assert len(poster.instagram_client.album_uploads) == 1
+
+
+@freeze_time("2024-01-01")
+def test_batches_posts_with_over_19_events(get_test_poster):
+    events = [get_test_airtable_record(event_date="2024-01-02")] * 38
+    poster = get_test_poster(events)
+    poster.post()
+
+    album_0_paths = poster.instagram_client.album_uploads[0]["kwargs"]["paths"]
+    album_1_paths = poster.instagram_client.album_uploads[1]["kwargs"]["paths"]
+    assert "intro_image.jpg" in album_0_paths[0]
+    assert "batches/1/" in album_0_paths[0]
+    assert "event_image_1.jpg" in album_0_paths[1]
+    assert "event_image_19.jpg" in album_0_paths[19]
+    assert "intro_image.jpg" in album_1_paths[0]
+    assert "batches/2/" in album_1_paths[0]
+    assert "event_image_1.jpg" in album_1_paths[1]
+    assert "event_image_19.jpg" in album_1_paths[19]

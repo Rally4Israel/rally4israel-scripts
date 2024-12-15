@@ -9,6 +9,7 @@ from r4ilpy.image_generators import (
 from r4ilpy.settings import INSTAGRAM_PASSWORD, INSTAGRAM_SESSION_ID, INSTAGRAM_USERNAME
 from instagrapi import Client
 import os
+from itertools import islice
 
 IMAGE_PATH = "img/testing.jpg"
 
@@ -43,19 +44,48 @@ class InstagramPoster:
         return self.intro_image_generator_class()
 
     def post(self):
+        for batch_number, batch in enumerate(self.batched_events, start=1):
+            self.post_event_batch(batch_number, batch)
+
+    @cached_property
+    def batched_events(self):
+        events = self.get_events()
+
+        def batched(iterable, batch_size):
+            it = iter(iterable)
+            while batch := list(islice(it, batch_size)):
+                yield batch
+
+        batched_events = batched(events, 19)
+        return list(batched_events)
+
+    def get_events(self):
         records = self.airtable_conn.fetchall()
         events = [airtable_record_to_event(record) for record in records]
-        self.intro_image_generator.generate()
-        for event in events:
-            self.event_image_generator_class(event)
+        return events
 
-        images_dir = f"{self.base_path}batches/1/"
+    @cached_property
+    def total_event_batches(self):
+        return len(self.batched_events)
+
+    def post_event_batch(self, batch_number, batch):
+        self.generate_batch_images(batch_number, batch)
+        images_dir = f"{self.base_path}batches/{batch_number}/"
         image_paths = get_image_paths(images_dir)
         self.instagram_client.album_upload(
             paths=image_paths,
-            caption="testing something...",
+            caption=f"Batch {batch_number}: testing something...",
             extra_data={"invite_coauthor_user_ids": []},
         )
+
+    def generate_batch_images(self, batch_number, batch):
+        self.intro_image_generator_class(
+            batch_no=batch_number, total_batches=self.total_event_batches
+        ).generate()
+        for event_no, event in enumerate(batch, start=1):
+            self.event_image_generator_class(
+                event, batch_no=batch_number, filename=f"event_image_{event_no}.jpg"
+            ).generate()
 
 
 def main():
