@@ -61,15 +61,6 @@ class InstagramPoster:
         return list(batched_events)
 
     def get_events(self):
-        event = Event(
-            title="Chicago (DePaul): Stop the Hate: Rally for Jewish Students",
-            date=date(2024, 11, 21),
-            start_time=time(17, 0),
-            location=(
-                "DePaul University - Lincoln Park Student Center, 2250 N. Sheffield Ave."
-            ),
-        )
-        return [event] * 25
         records = self.airtable_conn.fetchall()
         events = [airtable_record_to_event(record) for record in records]
         return events
