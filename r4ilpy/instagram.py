@@ -1,6 +1,7 @@
+from datetime import date, time
 from functools import cached_property
 from r4ilpy.airtable import AirtableCalendarViewConnector
-from r4ilpy.events import airtable_record_to_event
+from r4ilpy.events import Event, airtable_record_to_event
 from r4ilpy.image_generators import (
     EventImageGenerator,
     IntroImageGenerator,
@@ -60,6 +61,15 @@ class InstagramPoster:
         return list(batched_events)
 
     def get_events(self):
+        event = Event(
+            title="Chicago (DePaul): Stop the Hate: Rally for Jewish Students",
+            date=date(2024, 11, 21),
+            start_time=time(17, 0),
+            location=(
+                "DePaul University - Lincoln Park Student Center, 2250 N. Sheffield Ave."
+            ),
+        )
+        return [event] * 25
         records = self.airtable_conn.fetchall()
         events = [airtable_record_to_event(record) for record in records]
         return events
@@ -71,7 +81,7 @@ class InstagramPoster:
     def post_event_batch(self, batch_number, batch):
         self.generate_batch_images(batch_number, batch)
         images_dir = f"{self.base_path}batches/{batch_number}/"
-        image_paths = get_image_paths(images_dir)
+        image_paths = self.get_image_paths(images_dir)
         self.instagram_client.album_upload(
             paths=image_paths,
             caption=f"Batch {batch_number}: testing something...",
@@ -83,9 +93,36 @@ class InstagramPoster:
             batch_no=batch_number, total_batches=self.total_event_batches
         ).generate()
         for event_no, event in enumerate(batch, start=1):
+            zero_padded = str(event_no).zfill(2)
             self.event_image_generator_class(
-                event, batch_no=batch_number, filename=f"event_image_{event_no}.jpg"
+                event, batch_no=batch_number, filename=f"event_image_{zero_padded}.jpg"
             ).generate()
+
+    def get_image_paths(self, directory):
+        """
+        Get a list of image file paths in the given directory.
+        Only includes .jpg, .jpeg, and .png files.
+        Ensures intro_image.jpg is first, followed by other images in alphabetical order.
+        """
+        valid_extensions = [".jpg", ".jpeg", ".png"]
+        image_paths = [
+            os.path.join(directory, filename)
+            for filename in os.listdir(directory)
+            if any(filename.lower().endswith(ext) for ext in valid_extensions)
+        ]
+
+        # Separate intro_image.jpg and sort the rest alphabetically
+        intro_image = [
+            path for path in image_paths if os.path.basename(path) == "intro_image.jpg"
+        ]
+        other_images = sorted(
+            [
+                path
+                for path in image_paths
+                if os.path.basename(path) != "intro_image.jpg"
+            ]
+        )
+        return intro_image + other_images
 
 
 def main():
