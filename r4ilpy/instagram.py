@@ -1,7 +1,6 @@
-from datetime import date, time
 from functools import cached_property
 from r4ilpy.airtable import AirtableCalendarViewConnector
-from r4ilpy.events import Event, airtable_record_to_event
+from r4ilpy.events import airtable_record_to_event
 from r4ilpy.image_generators import (
     EventImageGenerator,
     IntroImageGenerator,
