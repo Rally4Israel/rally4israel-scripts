@@ -2,7 +2,7 @@ name: Instagram Script
 
 on:
   schedule:
-    - cron: "24 13 * * *" # 1:24 PM UTC | 8:24 AM EST | 9:24 AM EDT
+    - cron: "24 13 * * 3" # Wednesday 1:24 PM UTC | 8:24 AM EST | 9:24 AM EDT
   workflow_dispatch:
     inputs:
       use_live_account:
