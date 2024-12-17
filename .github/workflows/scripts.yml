@@ -1,6 +1,8 @@
 name: Instagram Script
 
 on:
+  schedule:
+    - cron: "24 13 * * *" # 1:24 PM UTC | 8:24 AM EST | 9:24 AM EDT
   workflow_dispatch:
     inputs:
       use_live_account:
@@ -33,7 +35,10 @@ jobs:
 
       - name: Set Environment Variables
         run: |
-          if [ "${{ github.event.inputs.use_live_account }}" == "yes" ]; then
+          if
+            [ "${{ github.event_name }}" == "schedule" ]
+            || [ "${{ github.event.inputs.use_live_account }}" == "yes"]
+            ; then
             echo "INSTAGRAM_SESSION_ID=${{ secrets.INSTAGRAM_SESSION_ID }}" >> $GITHUB_ENV
           else
             echo "INSTAGRAM_SESSION_ID=${{ secrets.TEST_INSTAGRAM_SESSION_ID }}" >> $GITHUB_ENV
