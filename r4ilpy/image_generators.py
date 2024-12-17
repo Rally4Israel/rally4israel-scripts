@@ -104,6 +104,10 @@ class IntroImageGenerator:
             ("Rally4Israel Rally Roundup", self.font_title),
             (formatted_post_time, self.font_subtitle),
         ]
+        if self.total_batches > 1:
+            header_lines.append(
+                (f"(post {self.batch_no}/{self.total_batches})", self.font_subtitle)
+            )
 
         # Calculate header dimensions
         line_heights = [
@@ -493,5 +497,5 @@ def generate_event_images(open_when_done=False):
 
 
 if __name__ == "__main__":
-    IntroImageGenerator().generate(open_when_done=True)
-    generate_event_images(open_when_done=True)
+    IntroImageGenerator(total_batches=2).generate(open_when_done=True)
+    # generate_event_images(open_when_done=True)
