@@ -75,7 +75,7 @@ class InstagramPoster:
         image_paths = self.get_image_paths(images_dir)
         self.instagram_client.album_upload(
             paths=image_paths,
-            # caption=f"Batch {batch_number}: testing something...",
+            caption="",
             extra_data={"invite_coauthor_user_ids": []},
         )
 
