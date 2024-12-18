@@ -41,7 +41,7 @@ class InstagramPoster:
 
     @property
     def intro_image_generator(self):
-        return self.intro_image_generator_class()
+        return self.intro_image_generator_class(base_path=self.base_path)
 
     def post(self):
         for batch_number, batch in enumerate(self.batched_events, start=1):
@@ -80,12 +80,17 @@ class InstagramPoster:
 
     def generate_batch_images(self, batch_number, batch):
         self.intro_image_generator_class(
-            batch_no=batch_number, total_batches=self.total_event_batches
+            batch_no=batch_number,
+            total_batches=self.total_event_batches,
+            base_path=self.base_path,
         ).generate()
         for event_no, event in enumerate(batch, start=1):
             zero_padded = str(event_no).zfill(2)
             self.event_image_generator_class(
-                event, batch_no=batch_number, filename=f"event_image_{zero_padded}.jpg"
+                event,
+                batch_no=batch_number,
+                filename=f"event_image_{zero_padded}.jpg",
+                base_path=self.base_path,
             ).generate()
 
     def get_image_paths(self, directory):

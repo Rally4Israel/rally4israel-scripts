@@ -12,14 +12,15 @@ import os
 
 class IntroImageGenerator:
     padding = 60
-    base_path = "img/instagram/"
 
     def __init__(
         self,
         filename="intro_image.jpg",
         batch_no=1,
         total_batches=1,
+        base_path="img/instagram/",
     ):
+        self.base_path = base_path
         self.batch_no = batch_no
         self.total_batches = total_batches
         self.filename = f"{self.base_path}batches/{self.batch_no}/{filename}"
@@ -211,6 +212,7 @@ class IntroImageGenerator:
         # Show the image
         if open_when_done:
             self.open()
+        print("GENERATED INTRO IMAGE!")
 
     def load_fonts(self):
         try:
@@ -239,14 +241,15 @@ class IntroImageGenerator:
 
 class EventImageGenerator:
     padding = 60
-    base_path = "img/instagram/"
 
     def __init__(
         self,
         event: Event,
         filename="event_image.jpg",
         batch_no=1,
+        base_path="img/instagram/",
     ):
+        self.base_path = base_path
         self.event = event
         self.batch_no = batch_no
         self.filename = f"{self.base_path}batches/{self.batch_no}/{filename}"

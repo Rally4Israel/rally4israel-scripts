@@ -21,10 +21,10 @@ def get_test_poster(tmp_path):
                 return events
 
         class TestIntroImageGenerator(IntroImageGenerator):
-            base_path = str(tmp_path) + "/"
+            pass
 
         class TestEventImageGenerator(EventImageGenerator):
-            base_path = str(tmp_path) + "/"
+            pass
 
         class TestInstagramPoster(InstagramPoster):
             base_path = str(tmp_path) + "/"
@@ -76,10 +76,10 @@ def test_batches_posts_with_over_19_events(get_test_poster):
     assert "intro_image.jpg" in album_0_paths[0]
     assert "batches/1/" in album_0_paths[0]
     assert "event_image_01.jpg" in album_0_paths[1]
-    assert "event_image_02.jpg" in album_0_paths[1]
+    assert "event_image_02.jpg" in album_0_paths[2]
     assert "event_image_19.jpg" in album_0_paths[19]
     assert "intro_image.jpg" in album_1_paths[0]
     assert "batches/2/" in album_1_paths[0]
     assert "event_image_01.jpg" in album_1_paths[1]
-    assert "event_image_02.jpg" in album_1_paths[1]
+    assert "event_image_02.jpg" in album_1_paths[2]
     assert "event_image_19.jpg" in album_1_paths[19]
