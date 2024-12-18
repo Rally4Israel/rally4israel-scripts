@@ -265,7 +265,11 @@ class EventImageGenerator:
 
     @property
     def formatted_start_time(self):
-        return self.event.start_time.strftime("%-I:%M %p").lower()
+        try:
+            return self.event.start_time.strftime("%-I:%M %p").lower()
+        except AttributeError as e:
+            print(e)
+            print("Failed on: ", self.event)
 
     def create_base_image(self):
         return Image.new(
