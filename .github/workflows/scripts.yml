@@ -35,10 +35,7 @@ jobs:
 
       - name: Set Environment Variables
         run: |
-          if
-            [ "${{ github.event_name }}" == "schedule" ]
-            || [ "${{ github.event.inputs.use_live_account }}" == "yes"]
-            ; then
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.use_live_account }}" = "yes" ]; then
             echo "INSTAGRAM_SESSION_ID=${{ secrets.INSTAGRAM_SESSION_ID }}" >> $GITHUB_ENV
           else
             echo "INSTAGRAM_SESSION_ID=${{ secrets.TEST_INSTAGRAM_SESSION_ID }}" >> $GITHUB_ENV
