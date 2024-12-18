@@ -212,7 +212,6 @@ class IntroImageGenerator:
         # Show the image
         if open_when_done:
             self.open()
-        print("GENERATED INTRO IMAGE!")
 
     def load_fonts(self):
         try:
@@ -500,5 +499,5 @@ def generate_event_images(open_when_done=False):
 
 
 if __name__ == "__main__":
-    IntroImageGenerator(total_batches=2).generate(open_when_done=True)
-    # generate_event_images(open_when_done=True)
+    # IntroImageGenerator(total_batches=2).generate(open_when_done=True)
+    generate_event_images(open_when_done=True)
