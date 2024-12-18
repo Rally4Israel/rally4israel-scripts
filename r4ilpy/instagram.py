@@ -132,7 +132,7 @@ def main():
 
     media = client.album_upload(
         paths=[IMAGE_PATH, IMAGE_PATH],
-        caption="testing something...",
+        # caption="testing something...",
         extra_data={"invite_coauthor_user_ids": collaborator_ids},
     )
     print(media)
