@@ -1,5 +1,5 @@
 from functools import cached_property
-from r4ilpy.airtable import AirtableCalendarViewConnector
+from r4ilpy.airtable import AirtableCalendarViewConnector, AirtableRecordsFilterer
 from r4ilpy.events import airtable_record_to_event
 from r4ilpy.image_generators import (
     EventImageGenerator,
@@ -61,7 +61,8 @@ class InstagramPoster:
 
     def get_events(self):
         records = self.airtable_conn.fetchall()
-        events = [airtable_record_to_event(record) for record in records]
+        filtered_records = AirtableRecordsFilterer(records).filter()
+        events = [airtable_record_to_event(record) for record in filtered_records]
         return events
 
     @cached_property
