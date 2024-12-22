@@ -503,5 +503,5 @@ def generate_event_images(open_when_done=False):
 
 
 if __name__ == "__main__":
-    # IntroImageGenerator(total_batches=2).generate(open_when_done=True)
+    IntroImageGenerator().generate(open_when_done=True)
     generate_event_images(open_when_done=True)
