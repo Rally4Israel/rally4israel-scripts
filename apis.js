@@ -1,35 +1,35 @@
 class FacebookAPI {
-  post(message="Testing something...") {
-  // Replace with your Facebook Page ID and access token
-  const facebookPageId = secrets.FACEBOOK.PAGE_ID;
-  const accessToken = secrets.FACEBOOK.PAGE_ACCESS_TOKEN;
+    post(message = "Testing something...") {
+        // Replace with your Facebook Page ID and access token
+        const facebookPageId = secrets.FACEBOOK.PAGE_ID;
+        const accessToken = secrets.FACEBOOK.PAGE_ACCESS_TOKEN;
 
-  const facebookUrl = `https://graph.facebook.com/${facebookPageId}/feed`;
+        const facebookUrl = `https://graph.facebook.com/${facebookPageId}/feed`;
 
-  // Create the payload for the POST request
-  const payload = {
-    'message': message,
-    'access_token': accessToken
-  };
+        // Create the payload for the POST request
+        const payload = {
+            'message': message,
+            'access_token': accessToken
+        };
 
-  try {
-    // Send the POST request to Facebook's Graph API
-    const response = UrlFetchApp.fetch(facebookUrl, {
-      'method': 'post',
-      'payload': payload
-    });
+        try {
+            // Send the POST request to Facebook's Graph API
+            const response = UrlFetchApp.fetch(facebookUrl, {
+                'method': 'post',
+                'payload': payload
+            });
 
-    // Log the response to the console
-    Logger.log('Successfully posted on Facebook: ' + response.getContentText());
+            // Log the response to the console
+            Logger.log('Successfully posted on Facebook: ' + response.getContentText());
 
-    // Return the response as JSON
-    return JSON.parse(response.getContentText());
-  } catch (error) {
-    // Log and throw any errors
-    Logger.log('Error posting to Facebook: ' + error.message);
-    throw new Error('Error posting to Facebook: ' + error.message);
-  }
-}
+            // Return the response as JSON
+            return JSON.parse(response.getContentText());
+        } catch (error) {
+            // Log and throw any errors
+            Logger.log('Error posting to Facebook: ' + error.message);
+            throw new Error('Error posting to Facebook: ' + error.message);
+        }
+    }
 
 }
 
@@ -155,9 +155,80 @@ function twitterAuthCallback(request) {
     }
 }
 
+function getGoogleAccessToken() {
+    const url = "https://oauth2.googleapis.com/token";
+
+    // Create the JWT header and payload
+    const header = {
+        alg: "RS256",
+        typ: "JWT"
+    };
+
+    const now = Math.floor(Date.now() / 1000);
+    const payload = {
+        iss: secrets.GOOGLE.SERVICE_ACCOUNT_EMAIL,
+        scope: "https://www.googleapis.com/auth/calendar",
+        aud: "https://oauth2.googleapis.com/token",
+        exp: now + 3600, // 1 hour in the future
+        iat: now
+    };
+
+    // Encode to Base64
+    const base64Encode = (obj) => {
+        const json = JSON.stringify(obj);
+        return Utilities.base64EncodeWebSafe(json).replace(/=+$/, "");
+    };
+
+    const encodedHeader = base64Encode(header);
+    const encodedPayload = base64Encode(payload);
+
+    // Sign the JWT with the private key
+    const signature = Utilities.base64EncodeWebSafe(
+        Utilities.computeRsaSha256Signature(`${encodedHeader}.${encodedPayload}`, secrets.GOOGLE.PRIVATE_KEY)
+    );
+
+    const jwt = `${encodedHeader}.${encodedPayload}.${signature}`;
+
+    // Exchange the JWT for an access token
+    const options = {
+        method: "post",
+        contentType: "application/x-www-form-urlencoded",
+        payload: {
+            grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+            assertion: jwt
+        }
+    };
+
+    const response = UrlFetchApp.fetch(url, options);
+    const json = JSON.parse(response.getContentText());
+    return json.access_token;
+}
+
+
 class GCalAPI {
-    constructor(calendarId) {
+    constructor(calendarId, accessToken) {
         this.calendarId = calendarId;
+        this.accessToken = accessToken;
+        this.baseUrl = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`;
+    }
+
+    fetchApi(endpoint, options = {}) {
+        const defaultHeaders = {
+            Authorization: `Bearer ${this.accessToken}`,
+            "Content-Type": "application/json"
+        };
+
+        const response = UrlFetchApp.fetch(endpoint, {
+            ...options,
+            headers: { ...defaultHeaders, ...(options.headers || {}) },
+            muteHttpExceptions: true
+        });
+
+        if (response.getResponseCode() >= 200 && response.getResponseCode() < 300) {
+            return JSON.parse(response.getContentText());
+        } else {
+            throw new Error(`API request failed: ${response.getContentText()}`);
+        }
     }
 
     getAllEvents() {
@@ -165,12 +236,19 @@ class GCalAPI {
         let pageToken;
 
         do {
-            let response = Calendar.Events.list(this.calendarId, {
-                pageToken: pageToken,
+            const params = {
                 maxResults: 2500,
                 showDeleted: false,
-                singleEvents: true
-            });
+                singleEvents: true,
+            };
+            if (pageToken) {
+                params.pageToken = pageToken
+            }
+
+            const query = Object.keys(params)
+                .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+                .join("&");
+            const response = this.fetchApi(`${this.baseUrl}?${query}`);
             if (response.items && response.items.length > 0) {
                 events = events.concat(response.items);
             }
@@ -185,14 +263,22 @@ class GCalAPI {
         let pageToken;
 
         do {
-            let response = Calendar.Events.list(this.calendarId, {
-                pageToken: pageToken,
+            const params = {
                 maxResults: 2500,
                 showDeleted: false,
                 singleEvents: true,
                 timeMin: fromDate,
-                timeMax: toDate
-            });
+                timeMax: toDate,
+            };
+            if (pageToken) {
+                params.pageToken = pageToken
+            }
+
+            const query = Object.keys(params)
+                .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+                .join("&");
+
+            const response = this.fetchApi(`${this.baseUrl}?${query}`);
             if (response.items && response.items.length > 0) {
                 events = events.concat(response.items);
             }
@@ -204,27 +290,35 @@ class GCalAPI {
 
     createEvent(eventData) {
         try {
-            let createdEvent = Calendar.Events.insert(eventData, this.calendarId);
-            Logger.log('Event created: ' + createdEvent.htmlLink);
+            let createdEvent = this.fetchApi(this.baseUrl, {
+                method: "post",
+                payload: JSON.stringify(eventData)
+            });
+            Logger.log("Event created: " + createdEvent.htmlLink);
             return createdEvent;
         } catch (error) {
-            Logger.log('Error creating event: ' + error.message);
+            Logger.log("Error creating event: " + error.message);
         }
     }
 
     updateEvent(eventId, eventOptions) {
         try {
-            let updatedEvent = Calendar.Events.update(eventOptions, this.calendarId, eventId);
+            let updatedEvent = this.fetchApi(`${this.baseUrl}/${eventId}`, {
+                method: "put",
+                payload: JSON.stringify(eventOptions)
+            });
             Logger.log('Event updated: ' + updatedEvent.htmlLink);
             return updatedEvent;
         } catch (error) {
-            Logger.log('Error updating event: ' + error.message);
+            Logger.log("Error updating event: " + error.message);
         }
     }
 
     deleteEvent(eventId) {
         try {
-            Calendar.Events.remove(this.calendarId, eventId);
+            this.fetchApi(`${this.baseUrl}/${eventId}`, {
+                method: "delete"
+            });
             Logger.log('Event deleted successfully.');
         } catch (error) {
             Logger.log('Error deleting event: ' + error.message);
@@ -259,8 +353,8 @@ class AirtableAPI {
                 let result = JSON.parse(response);
                 allRecords = allRecords.concat(result.records);
                 if (result.offset) {
-                  const separator = this.url.includes('?') ? '&' : '?';
-                  urlWithOffset = `${this.url}${separator}offset=${result.offset}`;
+                    const separator = this.url.includes('?') ? '&' : '?';
+                    urlWithOffset = `${this.url}${separator}offset=${result.offset}`;
                 } else {
                     hasMorePages = false;
                 }

@@ -1,7 +1,8 @@
 
 function syncEvents() {
-  let israelChantsCalendarAPI = new GCalAPI('israelchants@gmail.com')
-  let rally4IsraelTeamCalendarAPI = new GCalAPI('rally4israelteam@gmail.com')
+  let googleAccessToken = getGoogleAccessToken()
+  let israelChantsCalendarAPI = new GCalAPI('israelchants@gmail.com', googleAccessToken)
+  let rally4IsraelTeamCalendarAPI = new GCalAPI('rally4israelteam@gmail.com', googleAccessToken)
   let airtableEventsAPI = new AirtableAPI(secrets.AIRTABLE.URLS.EVENTS, ["GCalID"])
   let airtableUsersAPI = new AirtableAPI(secrets.AIRTABLE.URLS.USERS, ["Email"])
   let sycner = new GCalToAirtableSyncer(
